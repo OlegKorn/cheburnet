@@ -1,14 +1,8 @@
 import requests, time
 from bs4 import BeautifulSoup as bs
-import webbrowser as w
 
-
-###################################TESTED SECTION BEGIN
-###################################TESTED SECTION BEGIN
-###################################TESTED SECTION BEGIN
 
 URL = 'https://xuk.ooo/erotic/page'
- 
 
 headers = {'access-control-allow-origin' : '*',
            'Request Method' : 'GET',
@@ -19,80 +13,86 @@ headers = {'access-control-allow-origin' : '*',
 }
 
 home = '/home/o/python/ero/'
-entries_links = '/home/o/python/ero/entries_links_2.txt'
-file_links = []
+entries_links = '/home/o/python/ero/entries_links.txt' #на данном сайте 2410 страниц, примерно на 1400 произойдет ошибка
 
-f = open(entries_links, 'w')
+#запоминаем число, перезапускаем get_entries_urls(запомненное_число), переписываем строку 16 на entries_links_2.txt
+#вторая ошибка будет на 400, делаем аналогично
+#итого будет 3 файла (внизу)
+
+files = ['/home/o/python/ero/entries_links.txt',
+         '/home/o/python/ero/entries_links_2.txt',
+         '/home/o/python/ero/entries_links_3.txt'
+]
+
+#f = open(entries_links, 'w')
+
 
 def get_entries_urls(n:int):
 
-    print(n)
-    while n != 1:
+    try:
+        
+        print(n)
+        while n != 1:
 
-        session = requests.Session()
-        request = session.get(URL + str(n), headers=headers)
-        soup = bs(request.content, 'html.parser')
+            session = requests.Session()
+            request = session.get(URL + str(n), headers=headers)
+            soup = bs(request.content, 'html.parser')
 
-        for i in soup.find('div', attrs={'class':'items justified'}).find_all('div', class_='photo-item'):
-            link = i.a.get('href')
-            f.write(link)
+            for i in soup.find('div', attrs={'class':'items justified'}).find_all('div', class_='photo-item'):
+                link = i.a.get('href')
+                f.write(link)
+                f.write('\n')
             f.write('\n')
+            get_entries_urls(n-1)
 
-        f.write('\n')
-
-        get_entries_urls(n-1)
+    except Error as e:
+        print(e)
+        input('Error. Let"s try to continue from {}'.format(n))
+        get_entries_urls(n)
 
     f.close()
-    return entries_links
-
-###################################TESTED SECTION END
-###################################TESTED SECTION END
-###################################TESTED SECTION END
-       
-
-def get_files_urls():
-
-    for entry_url in entries_links:
-        session = requests.Session()
-        request = session.get(entry_url, headers=headers)
-        soup = bs(request.content, 'html.parser')
-
-        for i in soup.find_all('ul', attrs={'class':'gallery-b a'}): 
-            entries = i.find_all('li')
-
-        for entry in entries:
-            file_link = entry.a.get('href')
-            file_links.append(file_link)
 
 
+def save_files():
 
-def save():
-    x = 1
-    for file_link in file_links:
-        try:
-            print(file_link)
-            filename = file_link.split('/')[-1] 
-            where = home + str(x) +filename 
-            r = requests.get(file_link, stream=True)
-            image = r.raw.read()
-            f = open(where, "wb")
-            f.write(image)
-            x += 1
-        except:
-            pass
+    for i in files:
+
+            f = open(i, 'r')
+
+            f1 = f.readlines()
+
+            for entry_url in f1:
+
+                session = requests.Session()
+                request = session.get(entry_url, headers=headers)
+                soup = bs(request.content, 'html.parser')
 
 
+                for img in soup.find('div', id='items-container').find_all('div', class_='photo-item'): 
+                    try:
+                        img_prelink = img.a.get('href')
 
-get_entries_urls(1442)
-        
+                        session = requests.Session()
+                        request = session.get(img_prelink, headers=headers)
+                        img_soup = bs(request.content, 'html.parser')
 
-# download the url contents in binary format
-#r = requests.get(url, stream=True)
-#image = r.raw.read()
+                        img_link = img_soup.find('div', class_='photo-info')
+                        end_link = img_link.a.get('href')
 
-#print(r.status_code)
+                        print(end_link.replace('\n', ''))
 
-# open method to open a file on your system and write the contents
-#if r.status_code == 200:
+                        r = requests.get(end_link, stream=True)
+                        image = r.raw.read()
+                        open(home + end_link[60:], "wb").write(image)
 
-#    open("/home/o/Загрузки/dd.jpg", "wb").write(image)
+                    except Exception as e:
+                        print(e)
+                        input('Error. Enter to continue')
+                        pass
+
+
+get_entries_urls(2410)
+
+save_files()
+
+
