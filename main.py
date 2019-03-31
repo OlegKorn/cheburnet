@@ -2,7 +2,7 @@ import requests, time
 from bs4 import BeautifulSoup as bs
 
 
-URL = 'https://xuk.ooo/erotic/page'
+URL = 'http://xuk.ooo/erotic/page'
 
 headers = {'access-control-allow-origin' : '*',
            'Request Method' : 'GET',
@@ -12,16 +12,12 @@ headers = {'access-control-allow-origin' : '*',
            'User-Agent' : 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36'
 }
 
-home = '/home/o/python/ero/'
-entries_links = '/home/o/python/ero/entries_links.txt' #на данном сайте 2410 страниц, примерно на 1400 произойдет ошибка
+home = '/home/o/python/ero/sex/'
 
-#запоминаем число, перезапускаем get_entries_urls(запомненное_число), переписываем строку 16 на entries_links_2.txt
-#вторая ошибка будет на 400, делаем аналогично
-#итого будет 3 файла (внизу)
+#f = open('/home/o/python/ero/entries_links3.txt', 'w')
 
-files = ['/home/o/python/ero/entries_links.txt',
-         '/home/o/python/ero/entries_links_2.txt',
-         '/home/o/python/ero/entries_links_3.txt'
+files = ['/home/o/python/ero/entries_links3.txt',
+         '/home/o/python/ero/entries_links2.txt'
 ]
 
 #f = open(entries_links, 'w')
@@ -33,7 +29,7 @@ def get_entries_urls(n:int):
         
         print(n)
         while n != 1:
-
+           
             session = requests.Session()
             request = session.get(URL + str(n), headers=headers)
             soup = bs(request.content, 'html.parser')
@@ -42,26 +38,22 @@ def get_entries_urls(n:int):
                 link = i.a.get('href')
                 f.write(link)
                 f.write('\n')
-            f.write('\n')
             get_entries_urls(n-1)
-
-    except Error as e:
+                      
+    except Exception as e:
         print(e)
         input('Error. Let"s try to continue from {}'.format(n))
         get_entries_urls(n)
 
     f.close()
 
-
-def save_files():
+def save():
 
     for i in files:
 
-            f = open(i, 'r')
+            f = open(i, 'r').readlines()
 
-            f1 = f.readlines()
-
-            for entry_url in f1:
+            for entry_url in f:
 
                 session = requests.Session()
                 request = session.get(entry_url, headers=headers)
@@ -70,6 +62,7 @@ def save_files():
 
                 for img in soup.find('div', id='items-container').find_all('div', class_='photo-item'): 
                     try:
+
                         img_prelink = img.a.get('href')
 
                         session = requests.Session()
@@ -78,21 +71,30 @@ def save_files():
 
                         img_link = img_soup.find('div', class_='photo-info')
                         end_link = img_link.a.get('href')
-
-                        print(end_link.replace('\n', ''))
+                        print(end_link)
 
                         r = requests.get(end_link, stream=True)
                         image = r.raw.read()
                         open(home + end_link[60:], "wb").write(image)
 
-                    except Exception as e:
-                        print(e)
-                        input('Error. Enter to continue')
-                        pass
+                    except MissingSchema:
+                        print(MissingSchema)
+                        continue
 
 
-get_entries_urls(2410)
 
-save_files()
+save()
 
+#get_entries_urls(480)
+        
 
+# download the url contents in binary format
+#r = requests.get(url, stream=True)
+#image = r.raw.read()
+
+#print(r.status_code)
+
+# open method to open a file on your system and write the contents
+#if r.status_code == 200:
+
+#    open("/home/o/Загрузки/dd.jpg", "wb").write(image)
