@@ -1,4 +1,4 @@
-import requests, sys
+import requests, sys, re
 from bs4 import BeautifulSoup as bs
 
 
@@ -33,7 +33,7 @@ def check():
 
 
 
-def get_urls():
+def get_entries_urls():
     
     try:
 
@@ -65,16 +65,16 @@ def save():
             request = session.get(psto, headers=headers)
             soup = bs(request.content, 'html.parser')
 
-            for img in soup.find('td', attrs={'class':'preview psto back'}).find_all('a'): 
+            for img in soup.find_all('a', class_='fullimg'):
 
                 try:
 
                     img_prelink = img.get('href')
-                    huj = img_prelink[27:].replace('/p', '_')
+                    huj = img_prelink[17:].replace('/', '_')
 
                     img_link = site_root + img_prelink
-                    
-                    print(img_link)
+
+                    print(huj)
 
                     session = requests.Session()
                     request = session.get(img_link, headers=headers)
@@ -89,6 +89,8 @@ def save():
         pass
 
 
-get_urls()
+get_entries_urls()
 save()
+
+
 
