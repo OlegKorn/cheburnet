@@ -57,13 +57,13 @@ def save():
             for img in soup.find_all('a', class_='fullimg'):
                 try:
                     img_prelink = img.get('href')
-                    huj = img_prelink[17:].replace('/', '_')
-                    img_link = site_root + img_prelink
+                    img_subname = img_prelink[17:].replace('/', '_') #нечто вроде 4d22c934.89326920_11.jpg, меняем /, т.к. недопустимый символ
+                    img_link = site_root + img_prelink 
                     session = requests.Session()
                     request = session.get(img_link, headers=headers)
                     r = requests.get(img_link, stream=True)
                     image = r.raw.read()
-                    open(home + huj, "wb").write(image)
+                    open(home + img_subname, "wb").write(image)
 
                 except Exception:
                     pass
