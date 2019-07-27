@@ -22,7 +22,7 @@ if '#!#' in url: #with #!#
     art_movement_folder_postfix = re.search('movement/(.*)#!#', url).group(1)     #all between movements/ and #!#
 
 if not '#!#' in url: #w/o #!#
-	art_movement_folder_postfix = re.search('movement/(.*)', url).group(1)        #all between movements/ and #!#
+    art_movement_folder_postfix = re.search('movement/(.*)', url).group(1)        #all between movements/ and #!#
 
 art_movement_folder_postfix = art_movement_folder_postfix.replace('-', ' ')
 print('Art movement is: ', art_movement_folder_postfix)
@@ -39,7 +39,7 @@ def create_folder():
 
 
 def get_description_info_txt():
-	#description of the given branch of art
+    #description of the given branch of art
 
     try: 
         session = requests.Session()
@@ -175,8 +175,8 @@ def save_images():
             
             #get the artist name ang his image link
             artist_folder_name = a[0].strip()
-            artist_images_entry = (SITE_ROOT + a[1]).replace('\n','')
-            #print(artist_images_enrty)
+            artist_images_entry = SITE_ROOT + a[1].replace('\n','')
+            print(artist_images_entry)
 
             session = requests.Session()
             
@@ -190,22 +190,28 @@ def save_images():
                 #print(artist_folder_name, img_url)
 
                 img_url = pre_img_url.replace('!PinterestSmall.jpg', '')
-                img_name = re.search('images/(.*)', img_url).group(1).replace('/', '-')
-                print('NAME=={}\nURL=={}\n'.format(img_name, img_url))
                 
-                session = requests.Session()
-                #переходим по картинам
-                request = session.get(artist_images_entry)
-                soup = bs(request.content, 'html.parser')
+                try:
+                    img_name = re.search('images/(.*)', img_url).group(0).replace('/', '-')
+                    print('NAME=={}\nURL=={}\n'.format(img_name, img_url))
+                        
+                    session = requests.Session()
+                    #переходим по картинам
+                    request = session.get(artist_images_entry)
+                    soup = bs(request.content, 'html.parser')
 
-                r = requests.get(img_url, stream=True)
-                image = r.raw.read()
-            
-                open(MOVEMENT_FOLDER + '/' + artist_folder_name + '/' + img_name, "wb").write(image)
+                    r = requests.get(img_url, stream=True)
+                    image = r.raw.read()
+                    
+                    open(MOVEMENT_FOLDER + '/' + artist_folder_name + '/' + img_name, "wb").write(image)
+                except Exception as e:
+                    print(e)
+                    pass
+
                 
     except Exception as e:
         print(e)
-        pass
+        
 
 save_images()
 #write_artist_descr()
