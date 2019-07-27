@@ -128,15 +128,55 @@ def save_artist_image():
         request = session.get(url)
         soup = bs(request.content, 'html.parser')
 
-       
-        for artist in soup.find_all('div', class_='title-block'):
-            artist_name = str(artist.find('div', class_='artist-name').text.strip())
-            artist_descr = artist.text.strip()
+        names = [name.text.strip().replace('\n', '') for name in soup.find_all('div', class_='artist-name')]
+        imgs = [img.img['src'] for img in soup.find_all('a', class_='image-wrapper')]
+
+        names_and_imgs = list(zip(names, imgs))
+
+        for i,a in enumerate(names_and_imgs):
             
-            #creating a txt file in a folder according to the list of artists
-            artist_descr_file = MOVEMENT_FOLDER + '/' + artist_name + '/' + artist_name + '.txt'
-            f = open(artist_descr_file, 'w')
-            f.write(artist_descr)
+            #get the artist name ang his image link
+            artist_folder_name = a[0].strip()
+            artist_image_link = a[1].strip()
+
+            print(artist_image_link)
+
+            #define the artist and his folder in MOVEMENT_FOLDER
+            artist_folder = MOVEMENT_FOLDER + '/' + artist_folder_name
+            session = requests.Session()
+            request = session.get(artist_image_link)
+
+            r = requests.get(artist_image_link, stream=True)
+            image = r.raw.read()
+            
+            open(artist_folder + '/' + artist_folder_name, "wb").write(image)
+
+            
+            #artist_name == artist_folder
+            #session = requests.Session()
+            #request = session.get(artist_img_src)
+            
+            #r = requests.get(artist_img_src, stream=True)
+            #image = r.raw.read()
+            
+            #open(home+z, "wb").write(image)
+
+
+        #print(artists)
+
+
+        '''for artist_img in soup.find_all('a', class_='image-wrapper'):
+            artist_img_src = str(artist_img.img['src'].strip())
+            
+            session = requests.Session()
+            request = session.get(artist_img_src)
+            
+            r = requests.get(artist_img_src, stream=True)
+            image = r.raw.read()
+            
+            open(home+z, "wb").write(image)
+            
+            #artist_descr_file = MOVEMENT_FOLDER + '/' + artist_name + '/' + artist_name + '.txt'''
 
 
     except Exception as e:
@@ -145,8 +185,8 @@ def save_artist_image():
 
 
 
-
-write_artist_descr()
+save_artist_image()
+#write_artist_descr()
 
 
 
