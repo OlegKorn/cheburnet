@@ -12,6 +12,7 @@ headers = {'access-control-allow-origin' : '*',
 }
 
 #page url
+SITE_ROOT = 'https://www.wikiart.org'
 url = 'https://www.wikiart.org/ru/artists-by-art-movement/akademizm#!#resultType:masonry'
 #home folder
 ROOT = '/home/o/Изображения/ART/'
@@ -151,82 +152,67 @@ def save_artist_image():
             
             open(artist_folder + '/' + artist_folder_name, "wb").write(image)
 
-            
-            #artist_name == artist_folder
-            #session = requests.Session()
-            #request = session.get(artist_img_src)
-            
-            #r = requests.get(artist_img_src, stream=True)
-            #image = r.raw.read()
-            
-            #open(home+z, "wb").write(image)
-
-
-        #print(artists)
-
-
-        '''for artist_img in soup.find_all('a', class_='image-wrapper'):
-            artist_img_src = str(artist_img.img['src'].strip())
-            
-            session = requests.Session()
-            request = session.get(artist_img_src)
-            
-            r = requests.get(artist_img_src, stream=True)
-            image = r.raw.read()
-            
-            open(home+z, "wb").write(image)
-            
-            #artist_descr_file = MOVEMENT_FOLDER + '/' + artist_name + '/' + artist_name + '.txt'''
-
-
     except Exception as e:
         print(e)
         pass
 
 
 
-save_artist_image()
-#write_artist_descr()
+def save_images():
 
+    try:
+        session = requests.Session()
+        request = session.get(url)
+        soup = bs(request.content, 'html.parser')
 
+        folders = [name.text.strip().replace('\n', '') for name in soup.find_all('div', class_='artist-name')]
+        artist_entry = [a.get('href') for a in soup.find_all('a', class_='image-wrapper')]
 
+        names_and_imgs = list(zip(folders, artist_entry))
+        #print(names_and_imgs)
 
-
-
-
-def save_img():
-    f = open(fi1, 'r').readlines()
-
-    for i in f:
-
-        link_replaced = i.replace('\n', '')
-
-        try:
-
-            z = link_replaced[50:].replace('/', '_')
+        for i,a in enumerate(names_and_imgs):
+            
+            #get the artist name ang his image link
+            artist_folder_name = a[0].strip()
+            artist_images_entry = (SITE_ROOT + a[1]).replace('\n','')
+            #print(artist_images_enrty)
 
             session = requests.Session()
-            request = session.get(link_replaced, headers=headers)
-
-            print(link_replaced)
             
-            r = requests.get(link_replaced, stream=True)
-            image = r.raw.read()
-            
-            open(home+z, "wb").write(image)
+            #переходим по художникам
+            request = session.get(artist_images_entry)
+            soup = bs(request.content, 'html.parser')
 
-        except Exception:
-            pass
+            img_urls = [img_url['src'] for img_url in soup.find_all('img')]
+
+            for pre_img_url in img_urls:
+                #print(artist_folder_name, img_url)
+
+                img_url = pre_img_url.replace('!PinterestSmall.jpg', '')
+                img_name = re.search('images/(.*)', img_url).group(1).replace('/', '-')
+                print('NAME=={}\nURL=={}\n'.format(img_name, img_url))
+                
+                session = requests.Session()
+                #переходим по картинам
+                request = session.get(artist_images_entry)
+                soup = bs(request.content, 'html.parser')
+
+                r = requests.get(img_url, stream=True)
+                image = r.raw.read()
+            
+                open(MOVEMENT_FOLDER + '/' + artist_folder_name + '/' + img_name, "wb").write(image)
+                
+    except Exception as e:
+        print(e)
+        pass
+
+save_images()
+#write_artist_descr()
 
 
 #create_folder()
 #get_description_info_txt()
-
-
-
-
-
-
 
 
 # download the url contents in binary format
