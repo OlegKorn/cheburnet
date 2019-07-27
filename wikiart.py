@@ -13,13 +13,16 @@ headers = {'access-control-allow-origin' : '*',
 
 #page url
 SITE_ROOT = 'https://www.wikiart.org'
-url = 'https://www.wikiart.org/ru/artists-by-art-movement/akademizm#!#resultType:masonry'
+url = 'https://www.wikiart.org/ru/artists-by-painting-school/bratstvo-prerafaelitov#!#resultType:masonry'
 #home folder
 ROOT = '/home/o/Изображения/ART/'
 
 #two types of url: with '#!#' and w/o
-if '#!#' in url: #with #!#
+if '#!#' and 'movement/' in url : #with #!#
     art_movement_folder_postfix = re.search('movement/(.*)#!#', url).group(1)     #all between movements/ and #!#
+
+if '#!#' and 'artists-by-painting-school/' in url : #with #!#
+    art_movement_folder_postfix = re.search('artists-by-painting-school/(.*)#!#', url).group(1)     #all between movements/ and #!#
 
 if not '#!#' in url: #w/o #!#
     art_movement_folder_postfix = re.search('movement/(.*)', url).group(1)        #all between movements/ and #!#
@@ -35,7 +38,8 @@ def create_folder():
         os.mkdir(MOVEMENT_FOLDER)
         print('Folder "{}" created'.format(MOVEMENT_FOLDER))
     else: 
-        print('{} already exists'.format(MOVEMENT_FOLDER))    
+        print('{} already exists'.format(MOVEMENT_FOLDER))
+
 
 
 def get_description_info_txt():
@@ -49,14 +53,14 @@ def get_description_info_txt():
         try:
             descr_title = soup.find('div', class_='title').text.replace('направление', '').replace('\n', '').strip()
             descr_text = soup.find('p', class_='dictionary-description-text').text
-
+                        
             art_movement_description_file = MOVEMENT_FOLDER + '/' + art_movement_folder_postfix + '.txt'
             
             f = open(art_movement_description_file, 'w')
             f.write(descr_title)
             f.writelines(str(descr_text))
 
-        except Exception as e:
+        except AttributeError as e:
             print(e)
             pass
 
@@ -84,7 +88,7 @@ def create_artists_folders():
         print(e)
         pass
 
-    
+
 def create_artists_descr():
     try:
         session = requests.Session()
@@ -99,6 +103,7 @@ def create_artists_descr():
     except Exception as e:
         print(e)
         pass
+
 
 
 def write_artist_descr():
@@ -213,7 +218,21 @@ def save_images():
         print(e)
         
 
+
+
+create_folder()
+get_description_info_txt()
+create_artists_folders()
+create_artists_descr()
+write_artist_descr()
+save_artist_image()
 save_images()
+
+
+
+
+
+
 #write_artist_descr()
 
 
