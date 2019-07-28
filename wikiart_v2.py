@@ -163,7 +163,7 @@ def save_artist_image():
             open(MOVEMENT_FOLDER + '/' + artist_name + '/' + artist_name.replace('/', '') + '.jpg', "wb").write(image)
 
         del session
-        
+
     except Exception as e:
         print(e)
         pass
@@ -171,71 +171,74 @@ def save_artist_image():
 
 
 
-save_artist_image()
-
-
-###################### выше переделано
-###################### выше переделано
-###################### выше переделано
 
 def save_images():
 
     try:
         session = requests.Session()
-        request = session.get(url)
+        request = session.get(ALL_ARTISTS)
         soup = bs(request.content, 'html.parser')
 
-        folders = [name.text.strip().replace('\n', '') for name in soup.find_all('div', class_='artist-name')]
-        artist_entry = [a.get('href') for a in soup.find_all('a', class_='image-wrapper')]
+        artist_links = [SITE_ROOT + artist_link.get('href') for artist_link in soup
+                       .find('div', class_='masonry-text-view masonry-text-view-all')
+                       .find_all('a')
+        ]
 
-        names_and_imgs = list(zip(folders, artist_entry))
-        #print(names_and_imgs)
+        for link in artist_links:
 
-        for i,a in enumerate(names_and_imgs):
-            
-            #get the artist name ang his image link
-            artist_folder_name = a[0].strip()
-            artist_images_entry = SITE_ROOT + a[1].replace('\n','')
-            print(artist_images_entry)
+            artist_all_works = link + '/all-works/text-list'   #iterate thru artists           
+            #print(artist_all_works)
 
             session = requests.Session()
+            request = session.get(artist_all_works)
             
-            #переходим по художникам
-            request = session.get(artist_images_entry)
+            #get the soup of all paints of an artist
             soup = bs(request.content, 'html.parser')
 
-            img_urls = [img_url['src'] for img_url in soup.find_all('img')]
+            artist_works_img_urls = [artist_works_img_url.a.get('href') for artist_works_img_url in soup.find_all('li', class_='painting-list-text-row')]
+            artist_works_img_title = [artist_works_img_title.a.text for artist_works_img_title in soup.find_all('li', class_='painting-list-text-row')]
 
-            for pre_img_url in img_urls:
-                #print(artist_folder_name, img_url)
+            img_titles = list(zip(artist_works_img_urls, artist_works_img_title))
 
-                img_url = pre_img_url.replace('!PinterestSmall.jpg', '')
+            for i,j in enumerate(img_titles):
+                given_artist_image_url = SITE_ROOT + str(j[0])
+                given_artist_image_title = str(j[1])
+
+                session = requests.Session()
+                request = session.get(given_artist_image_url)
+            
+                #get the soup of every paint of an artist
+                soup = bs(request.content, 'html.parser')
+
+                pre_image_name = soup.find('div', class_='wiki-layout-artist-info wiki-layout-artwork-info').article.h3.text.strip()
+                artist = soup.find('div', class_='wiki-layout-artist-info wiki-layout-artwork-info').article.h5.span.text.strip()
+                image_finish_url = soup.find('div', class_='wiki-layout-artist-image-wrapper').img['src'].strip().replace('!Large.jpg', '')
+
+                print(pre_image_name, artist, image_finish_url)
+
+                #WRITE IMAGES IN A FOLDER OF ARTIST
+                IMAGE_NAME = (pre_image_name + '.jpg')  
                 
-                try:
-                    img_name = re.search('images/(.*)', img_url).group(0).replace('/', '-')
-                    print('NAME=={}\nURL=={}\n'.format(img_name, img_url))
-                        
-                    session = requests.Session()
-                    #переходим по картинам
-                    request = session.get(artist_images_entry)
-                    soup = bs(request.content, 'html.parser')
+                r = requests.get(image_finish_url, stream=True)
+                image = r.raw.read()
 
-                    r = requests.get(img_url, stream=True)
-                    image = r.raw.read()
-                    
-                    open(MOVEMENT_FOLDER + '/' + artist_folder_name + '/' + img_name, "wb").write(image)
-                except Exception as e:
-                    print(e)
-                    pass
-
+                open(MOVEMENT_FOLDER + artist + '/' + IMAGE_NAME, "wb").write(image)
+                   
+        #del session
                 
     except Exception as e:
         print(e)
         
 
 
+save_images()
 
 
+#write_artist_descr()
+
+
+#create_folder()
+#get_description_info_txt()
 
 
 # download the url contents in binary format
