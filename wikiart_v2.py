@@ -10,7 +10,7 @@ ALL_ARTISTS = url + 'text-list'
 ROOT_FOLDER = '/home/o/Изображения/ART/'
 
 
-art_movement_folder_postfix = re.search('movement/(.*)text-list', ALL_ARTISTS).group(1)    #all between movements/ and #!#
+art_movement_folder_postfix = re.search('movement/(.*)/text-list', ALL_ARTISTS).group(1)    #all between movements/ and #!#
 MOVEMENT_FOLDER = ROOT_FOLDER + art_movement_folder_postfix
 print('Art movement is: {}, MOVEMENT_FOLDER is {}'.format(art_movement_folder_postfix, MOVEMENT_FOLDER))
 
