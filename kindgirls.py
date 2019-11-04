@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup as bs
 import re
 
 
+
 headers = {'access-control-allow-origin' : '*',
            'Request Method' : 'GET',
            'Status Code' : '200',
@@ -11,13 +12,15 @@ headers = {'access-control-allow-origin' : '*',
            'User-Agent' : 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36'
 }
 
+
+
 class Downloader:
 
-    url = 'https://www.kindgirls.com/girls/nansy-a/476'
-    url_root = 'https://www.kindgirls.com'
-    root_dir = '/home/o/Документы/LINUXOLEG/py/ero/kindgirls.com/'
+    url = 'https://www.erosberry.com/model/Nansy_A.html'
+    url_root = 'https://www.erosberry.com'
+    root_dir = '/home/o/Документы/LINUXOLEG/py/ero/erosberry.com/'
 
-    model_name = re.search('girls/(.*)/', url).group(1) 
+    model_name = re.search('model/(.*).html', url).group(1) 
     print(model_name)   
     model_dir = root_dir + model_name
 
@@ -52,7 +55,7 @@ class Downloader:
     def get_posts(self):
         self.f_posts = open(Downloader.posts_file, 'w')
 
-        for post in self.soup.find_all('div', attrs={'gal_list'}):
+        for post in self.soup.find('div', attrs={'girl_thumbs'}).find_all('div', attrs={'container'}):
             post_link = Downloader.url_root + post.a.get('href').strip()
             self.f_posts.write(post_link + '\n')
 
@@ -65,17 +68,25 @@ class Downloader:
         self.f_posts = open(Downloader.posts_file, 'r')
 
         for post in self.f_posts:
+            x = re.search('com/(.*)', post)
+            marker = x.group(1)     #iveta-the-front-office-by-mpl-studios
+ 
             self.imgs = self.get_soup(post.strip())
                 
-            for i in self.imgs.find_all('div', attrs={'gal_list'}):
-                img = i.find_all('a')[1].get('href').strip()
-                    
-                #скачиваем картинку
-                self.r = self.get_request(img)
-                self.image = self.r.raw.read()
+            for i in self.imgs.find('div', id='photo').find_all('div', attrs={'container'}):
+                #там в контейнерах есть другие модели. проверяем соответствие
+                must_match = i.a.get('href')
+                print(f'marker: {marker}, i:{must_match}')
+                
+                if marker in must_match:
+                    img = 'http://' + i.img['src'].strip().replace('//', '')
+                     
+                    #скачиваем картинку
+                    self.r = self.get_request(img)
+                    self.image = self.r.raw.read()
 
-                print(Downloader.model_dir + '/' + img[45:-4].replace('/', '_') + '.jpg')
-                open(Downloader.model_dir + '/' + img[45:-4].replace('/', '_') + '.jpg', "wb").write(self.image)
+                    print(Downloader.model_dir + '/' + img[44:-4].replace('/', '_') + '.jpg')
+                    open(Downloader.model_dir + '/' + img[44:-4].replace('/', '_') + '.jpg', "wb").write(self.image)
 
             del self.imgs
 
@@ -85,6 +96,6 @@ class Downloader:
 
 d = Downloader()
 d.get_soup(Downloader.url)
-#d.get_posts()
+d.get_posts()
 d.get_imgs()
 
