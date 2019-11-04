@@ -3,7 +3,6 @@ from bs4 import BeautifulSoup as bs
 import re
 
 
-
 headers = {'access-control-allow-origin' : '*',
            'Request Method' : 'GET',
            'Status Code' : '200',
@@ -12,19 +11,7 @@ headers = {'access-control-allow-origin' : '*',
            'User-Agent' : 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36'
 }
 
-
-
 class Downloader:
-
-    '''
-    как достать все: 
-    инспектор кода - network - xhr
-    при прокрутке появляются страницы
-    только вручную наверно
-
-    url = 'https://www.erocurves.com/models/melisa-mendiny/page/2' и тд
-    https://www.erocurves.com/models/melisa-mendiny/page/3
-    '''
 
     url = 'https://www.kindgirls.com/girls/nansy-a/476'
     url_root = 'https://www.kindgirls.com'
