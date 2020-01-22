@@ -1,8 +1,8 @@
 # cheburnet.py
-Lets download erotic pics as much as possible before political fags ruin internet   
+Lets download pics
 
 requirements:  
 requests    
 bs4  
 
-Все просто: скачиваем картинки с голыми барышнями))) а то вдруг  
+Все просто: скачиваем картинки
