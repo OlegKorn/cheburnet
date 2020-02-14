@@ -1,7 +1,6 @@
 #/usr/bin/env python3
-import requests, sys, os,time, shutil, time
+import requests, sys, os, re
 from bs4 import BeautifulSoup as bs
-import webbrowser as w
 
 
 urls = [
@@ -64,13 +63,13 @@ class Ebabes:
     def save_urls(self):
 
         self.f = open(self.fi, 'r')
-        print(self.f)
+        
         self.file = self.f.readlines()
         self.f1 = open(self.fi1, 'w')
         
         for self.img_url in self.file:
 
-            self.img_url_replaced = self.img_url.replace('\n', '')
+            self.img_url_replaced = self.img_url.replace('\n', '').strip()
             self.session = requests.Session()
             self.request = self.session.get(self.img_url_replaced)
             self.soup = bs(self.request.content, 'html.parser')
@@ -78,10 +77,14 @@ class Ebabes:
             #image link
             for self.image in self.soup.find_all('img'):
                 try:
-                    self.link = self.image['src']
-                    print(self.link)
-                    self.f1.write(self.link)
-                    self.f1.write('\n')
+                    self.pre_link = self.image['src']
+                    if not 'preview' in self.pre_link:
+                        to_change = re.search("p/\d{4}.\d{4}_", self.pre_link)
+                        self.img_link = self.pre_link.replace(to_change.group(0), 'm')
+
+                        print(self.img_link)
+                        self.f1.write(self.img_link)
+                        self.f1.write('\n')
 
                 except Exception:
                     pass
@@ -117,8 +120,6 @@ class Ebabes:
         self.f.close()
 
 
-
-
 for url in urls:
     e = Ebabes(url)
     print(url)
@@ -128,8 +129,9 @@ for url in urls:
         print(f'Папка {e.home} не пустая')
         #e.get_soup()
         #e.get_posts()
-        #e.save_urls()
+        e.save_urls()
         e.save_img()
+
 
     if not os.listdir(e.home):
         pass
