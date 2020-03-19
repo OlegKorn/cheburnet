@@ -28,7 +28,7 @@ class Emma:
     
     def get_categories(self):
 
-        self.categories = '/home/o/Документы/PYTHON_SCRIPTS/ero/emmastoneweb/categories.txt'
+        self.categories = HOME_DIR + 'categories.txt'
 
         self.soup = self.get_soup(Emma.INI_URL)
         
@@ -52,11 +52,11 @@ class Emma:
       
 
     def get_subcats(self):
-        self.subcats = '/home/o/Документы/PYTHON_SCRIPTS/ero/emmastoneweb/subcats.txt'
+        self.subcats = HOME_DIR + 'subcats.txt'
         
         try: 
             self.subcats_links = open(self.subcats, 'w')
-            self.categories = open('/home/o/Документы/PYTHON_SCRIPTS/ero/emmastoneweb/categories.txt', 'r')
+            self.categories = open(HOME_DIR + 'categories.txt', 'r')
 
             for cat in self.categories:
                 cat = cat.strip()
@@ -77,11 +77,11 @@ class Emma:
 
 
     def get_albums_urls(self):
-        self.albums = '/home/o/Документы/PYTHON_SCRIPTS/ero/emmastoneweb/albums.txt'
+        self.albums = HOME_DIR + 'albums.txt'
        
         try: 
             self.albums_links = open(self.albums, 'w')
-            self.subcats = open('/home/o/Документы/PYTHON_SCRIPTS/ero/emmastoneweb/subcats.txt', 'r')
+            self.subcats = open(HOME_DIR + 'subcats.txt', 'r')
 
             for subcat in self.subcats:
                 subcat = subcat.strip()
@@ -101,7 +101,7 @@ class Emma:
 
     def save_img(self):
         self.counter = 1
-        self.albums = open('/home/o/Документы/PYTHON_SCRIPTS/ero/emmastoneweb/albums.txt', 'r')
+        self.albums = open(HOME_DIR + 'albums.txt', 'r')
 
         for album in self.albums:
             try:
@@ -113,7 +113,7 @@ class Emma:
                     self.foto_title = self.foto_url[39::].replace('/', '_').replace('%', '_')
                     
                     # if a file does not exists - download it
-                    if not os.path.exists('/home/o/Документы/PYTHON_SCRIPTS/ero/emmastoneweb/' + self.foto_title):
+                    if not os.path.exists(HOME_DIR + self.foto_title):
                         self.foto_title = self.foto_url[75::].replace('/', '_').replace('%', '_')
                         self.session = requests.Session()
                         self.r = requests.get(self.foto_url, stream=True)
