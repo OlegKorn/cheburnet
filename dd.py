@@ -2,17 +2,16 @@
 import requests, sys, os, time
 from bs4 import BeautifulSoup as bs
 import re
+import shutil 
 
 
 class DD:
 
     HOME_DIR = '/home/o/Документы/PYTHON_SCRIPTS/ero/dd/'
-
-
     urls = [
-        'http://vintage-erotica-forum.com/t19047-lynne-austin.html'
+        'http://vintage-erotica-forum.com/t19047-lynne-austin.html',
+        # 'http://vintage-erotica-forum.com/t948-kirsten-imrie.html'
     ]
-    
 
     headers = {
            'access-control-allow-origin' : '*',
@@ -43,83 +42,82 @@ class DD:
         return self.soup
 
 
-    def get_last_page(self):
-        for url in DD.urls:
-            self.get_soup(url)
-            self.model_name = self.get_name(url)
-            self.soup = self.get_soup(url)
+    def get_last_page(self, url):
+        self.get_soup(url)
+        self.soup = self.get_soup(url)
 
-            self.last_page = self.soup.find('div', class_='pagenav awn-ignore').find('td', attrs={'nowrap': 'nowrap'}).a
-            self.last_page = re.search(r'page=(\d+)', self.last_page['href']).group(0).replace('page=', '')
-            print(self.last_page)
+        self.last_page = self.soup.find('div', class_='pagenav awn-ignore').find('td', attrs={'nowrap': 'nowrap'}).a
+        self.last_page = re.search(r'page=(\d+)', self.last_page['href']).group(0).replace('page=', '')
+        print(self.last_page)
 
         return self.last_page
 
     
-    def write_all_pages_urls_of_model(self):
-
-        for url in DD.urls:
-            self.model_name = self.get_name(url)
-            f = open(DD.HOME_DIR + self.model_name + '/' + self.model_name + '.txt', 'w')
+    def write_all_pages_urls_of_model(self, url):
+        f = open(DD.HOME_DIR + self.model_name + '/' + self.model_name + '.txt', 'w')
             
-            self.pages_num = self.get_last_page()
-            for i in range(1, int(self.pages_num) + 1): 
-                self.url_ = url.replace(self.model_name, 'p' + str(i) + '-' + self.model_name) 
-                print(self.url_)
-                f.write(self.url_)
-                f.write('\n')
+        self.pages_num = self.get_last_page(url)
+        for i in range(1, int(self.pages_num) + 1): 
+            self.url_ = url.replace(self.model_name, 'p' + str(i) + '-' + self.model_name) 
+            print(self.url_)
+            f.write(self.url_.strip())
+            f.write('\n')
 
         f.close()
+    
 
-
-    def save_img(self):
-        self.counter = 1
-        self.albums = open('/home/o/Документы/PYTHON_SCRIPTS/ero/emmastoneweb/albums.txt', 'r')
-
-        for album in self.albums:
-            try:
-                album = album.strip()
-                self.soup = self.get_soup(album)
-
-                for foto in self.soup.find_all('img', attrs={'image thumbnail'}):
-                    self.foto_url = Emma.SITE_ROOT + foto['src'].replace('thumb_', '')
-                    self.foto_title39 = self.foto_url[39::].replace('/', '_').replace('%', '_')
-                    self.foto_title75 = self.foto_url[75::].replace('/', '_').replace('%', '_')
-                    
-                    # if a file does not exists - download it
-                    if not os.path.exists('/home/o/Документы/PYTHON_SCRIPTS/ero/emmastoneweb/' + self.foto_title39):
-                        if not os.path.exists('/home/o/Документы/PYTHON_SCRIPTS/ero/emmastoneweb/' + self.foto_title75):
-
-                            self.foto_title = self.foto_url[75::].replace('/', '_').replace('%', '_')
-                            self.session = requests.Session()
+    def get_all_fotos_url_of_model(self):
+        f = open(DD.HOME_DIR + self.model_name + '/' + self.model_name + '.txt', 'r')
+        f2 = open(DD.HOME_DIR + self.model_name + '/' + self.model_name + '_links.txt', 'w')
+        for url in f:
+            regex = re.compile('.*post_message_.*')
+            self.soup = self.get_soup(url)
+            self.all_posts = self.soup.find_all('div', attrs={'id': regex})
+            
+            for i in self.all_posts:
+                try:
+                    a_ = i.find('a', attrs={'target': '_blank'})['href']
+                    if not a_ is None:
+                        del self.soup
+                        self.soup = self.get_soup(a_)
+                        try:
+                            self.foto_url = self.soup.find_all('img')[1]['src']
+                            if not 'jpg' or 'JPG' in self.foto_url:
+                                pass    
+                            print(self.foto_url)
+                        
+                            f2.write(self.foto_url)
+                            f2.write('\n')
+                        
+                            self.filename = self.foto_url.split("/")[-1]
                             self.r = requests.get(self.foto_url, stream=True)
-                            self.image = self.r.raw.read()
-                            print(self.foto_title, self.counter, sep = "  ")
-                            open(Emma.HOME_DIR + self.foto_title, "wb").write(self.image)
 
-                            del self.session
+                            if self.r.status_code == 200:
+                                self.r.raw.decode_content = True
 
-                            self.counter += 1
-                    
-                    # if a file already exists - skip action and iterate to the next one
-                    else: 
-                        print(f'{self.foto_title75} EXISTS', self.counter, sep = "    ")
-                        self.counter += 1
-                        pass
+                                self.path = DD.HOME_DIR + self.model_name + '/' + self.filename
 
-                del self.soup
-                
-            except Exception:
-                print('error')
-                continue
+                                with open(self.path,'wb') as f:
+                                    shutil.copyfileobj(self.r.raw, f)
+
+                            time.sleep(1)
+
+                        except Exception as e:
+                            print(e)
+                            pass
+
+                except TypeError:
+                    pass
         
-
+        f.close()
+        f2.close()
+    
 
 
 dd = DD()
-#print(e.INI_URL)
-#e.get_categories()
-#e.get_subcats()
-#e.get_albums_urls()
-dd.write_all_pages_urls_of_model()
 
+for url in DD.urls:
+    dd.get_name(url)
+    dd.get_last_page(url)
+    dd.write_all_pages_urls_of_model(url)
+    dd.get_all_fotos_url_of_model()
