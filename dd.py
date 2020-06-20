@@ -1,5 +1,5 @@
 #/usr/bin/env python3
-import requests, sys, os, time
+import requests, os, time, sys
 from bs4 import BeautifulSoup as bs
 import re
 import shutil 
@@ -76,39 +76,68 @@ class DD:
             
             for i in self.all_posts:
                 try:
-                    a_ = i.find('a', attrs={'target': '_blank'})['href']
+                    print('\n\n', i['id'], end='\n')
+                    a_ = i.find_all('a', attrs={'target': '_blank'})
                     if not a_ is None:
-                        del self.soup
-                        self.soup = self.get_soup(a_)
-                        try:
-                            self.foto_url = self.soup.find_all('img')[1]['src']
-                            if not 'jpg' or 'JPG' in self.foto_url:
-                                pass    
-                            print(self.foto_url)
+                        for i_ in a_:
+                            self.im = i_['href']
+                            print(self.im)
+                            
+                            self.soup_of_image = self.get_soup(self.im)
+
+                            try:
+                                self.foto_url = self.soup_of_image.find_all('img')
+
+                                for img in self.foto_url:
+                                    if not 'logo_resized' in img['src']:
+                                        print(img['src'])
+                                
+                                        self.filename = img['src'][-8:]
+                                        self.r = requests.get(img['src'], stream=True)
+
+                                        if self.r.status_code == 200:
+                                            self.r.raw.decode_content = True
+
+                                            self.path = DD.HOME_DIR + self.model_name + '/' + self.filename
+
+                                            with open(self.path,'wb') as f:
+                                                shutil.copyfileobj(self.r.raw, f)
+
+
+
+                                '''
+                                if not 'jpg' or 'JPG' in self.foto_url:
+                                    pass    
+                                print(self.foto_url, url, sep='=====')
+                            
+                                
+                                self.filename = self.foto_url[:-10]
+                                self.r = requests.get(self.foto_url, stream=True)
+
+                                if self.r.status_code == 200:
+                                    self.r.raw.decode_content = True
+
+                                    self.path = DD.HOME_DIR + self.model_name + '/' + self.filename
+
+                                    with open(self.path,'wb') as f:
+                                        shutil.copyfileobj(self.r.raw, f)
+                                '''
+
+                            except Exception as e:
+                                print(e)
+                                pass
+                            
                         
-                            f2.write(self.foto_url)
-                            f2.write('\n')
-                        
-                            self.filename = self.foto_url.split("/")[-1]
-                            self.r = requests.get(self.foto_url, stream=True)
-
-                            if self.r.status_code == 200:
-                                self.r.raw.decode_content = True
-
-                                self.path = DD.HOME_DIR + self.model_name + '/' + self.filename
-
-                                with open(self.path,'wb') as f:
-                                    shutil.copyfileobj(self.r.raw, f)
-
-                            time.sleep(1)
-
-                        except Exception as e:
-                            print(e)
-                            pass
-
                 except TypeError:
                     pass
-        
+   
+            input('NEXT: ')
+
+            for i in range(31, 0, -1):
+                sys.stdout.write(str(i) + ' ')
+                sys.stdout.flush()
+                time.sleep(1)
+
         f.close()
         f2.close()
     
