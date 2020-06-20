@@ -9,8 +9,8 @@ class DD:
 
     HOME_DIR = '/home/o/Документы/PYTHON_SCRIPTS/ero/dd/'
     urls = [
-        'http://vintage-erotica-forum.com/t19047-lynne-austin.html',
-        # 'http://vintage-erotica-forum.com/t948-kirsten-imrie.html'
+        # 'http://vintage-erotica-forum.com/t19047-lynne-austin.html',
+        'http://vintage-erotica-forum.com/t23633-amy-lynn-baxter.html'
     ]
 
     headers = {
@@ -45,12 +45,24 @@ class DD:
     def get_last_page(self, url):
         self.get_soup(url)
         self.soup = self.get_soup(url)
+        
+        try:
+            self.last_page = self.soup.find('div', class_='pagenav awn-ignore').find('td', attrs={'nowrap': 'nowrap'}).a
+            self.last_page = re.search(r'page=(\d+)', self.last_page['href']).group(0).replace('page=', '')
+            print(self.last_page)
+            
 
-        self.last_page = self.soup.find('div', class_='pagenav awn-ignore').find('td', attrs={'nowrap': 'nowrap'}).a
-        self.last_page = re.search(r'page=(\d+)', self.last_page['href']).group(0).replace('page=', '')
-        print(self.last_page)
+        except Exception as e:
+            print(e)
+            self.last_page = re.search(r'of (\d*)', self.soup.find('div', class_='pagenav awn-ignore'). \
+                             find_all('td')[0].text). \
+                             group(0). \
+                             replace('of ', '')
+            print(self.last_page)
 
         return self.last_page
+
+        
 
     
     def write_all_pages_urls_of_model(self, url):
@@ -81,8 +93,7 @@ class DD:
                     if not a_ is None:
                         for i_ in a_:
                             self.im = i_['href']
-                            print(self.im)
-                            
+                                                        
                             self.soup_of_image = self.get_soup(self.im)
 
                             try:
@@ -92,7 +103,7 @@ class DD:
                                     if not 'logo_resized' in img['src']:
                                         print(img['src'])
                                 
-                                        self.filename = img['src'][-8:]
+                                        self.filename = img['src'][-13:]
                                         self.r = requests.get(img['src'], stream=True)
 
                                         if self.r.status_code == 200:
@@ -101,22 +112,23 @@ class DD:
                                             self.path = DD.HOME_DIR + self.model_name + '/' + self.filename
 
                                             with open(self.path,'wb') as f:
-                                                shutil.copyfileobj(self.r.raw, f)
-                                                time.sleep(1.5)
+                                                time.sleep(2)
+                                                shutil.copyfileobj(self.r.raw, f, 50000)
+                                                
 
                             except Exception as e:
                                 print(e)
                                 pass
                     
                     # timer 30 sec after every post
-                    for i in range(31, 0, -1):
+                    for i in range(61, 0, -1):
                         sys.stdout.write(str(i) + ' ')
                         sys.stdout.flush()
                         time.sleep(1)
+
                             
                 except TypeError:
                     pass
-
 
 
         f.close()
