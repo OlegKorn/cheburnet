@@ -102,41 +102,22 @@ class DD:
 
                                             with open(self.path,'wb') as f:
                                                 shutil.copyfileobj(self.r.raw, f)
-
-
-
-                                '''
-                                if not 'jpg' or 'JPG' in self.foto_url:
-                                    pass    
-                                print(self.foto_url, url, sep='=====')
-                            
-                                
-                                self.filename = self.foto_url[:-10]
-                                self.r = requests.get(self.foto_url, stream=True)
-
-                                if self.r.status_code == 200:
-                                    self.r.raw.decode_content = True
-
-                                    self.path = DD.HOME_DIR + self.model_name + '/' + self.filename
-
-                                    with open(self.path,'wb') as f:
-                                        shutil.copyfileobj(self.r.raw, f)
-                                '''
+                                                time.sleep(1.5)
 
                             except Exception as e:
                                 print(e)
                                 pass
+                    
+                    # timer 30 sec after every post
+                    for i in range(31, 0, -1):
+                        sys.stdout.write(str(i) + ' ')
+                        sys.stdout.flush()
+                        time.sleep(1)
                             
-                        
                 except TypeError:
                     pass
-   
-            input('NEXT: ')
 
-            for i in range(31, 0, -1):
-                sys.stdout.write(str(i) + ' ')
-                sys.stdout.flush()
-                time.sleep(1)
+
 
         f.close()
         f2.close()
