@@ -3,6 +3,8 @@ import requests, os, time, sys
 from bs4 import BeautifulSoup as bs
 import re
 import shutil 
+from urllib.request import Request, urlopen  # https://qna.habr.com/q/167569
+
 
 
 class DD:
@@ -10,9 +12,36 @@ class DD:
     HOME_DIR = '/home/o/Документы/PYTHON_SCRIPTS/ero/dd/'
     urls = [
         # 'http://vintage-erotica-forum.com/t19047-lynne-austin.html',
-        'http://vintage-erotica-forum.com/t23633-amy-lynn-baxter.html'
+        # 'http://vintage-erotica-forum.com/t17350-tiffany-sloan.html'
+        # 'http://vintage-erotica-forum.com/t25009-lesley-adams.html'
+        # 'http://vintage-erotica-forum.com/t7494-jan-fairbrother.html'
+        # 'http://vintage-erotica-forum.com/t15708-jennifer-lyn-jackson.html'
+        # 'http://vintage-erotica-forum.com/t6044-janie-dickens.html'
+        # 'http://vintage-erotica-forum.com/t2929-danni-ashe.html'
+        # 'http://vintage-erotica-forum.com/t264053-adele-rein.html'
+        # 'http://vintage-erotica-forum.com/t10822-claire-nicholson.html'
+        # 'http://vintage-erotica-forum.com/t5880-vicki-lynn-lasseter.html'
+        # 'http://vintage-erotica-forum.com/t15293-pamela-jean-stein.html'
+        # 'http://vintage-erotica-forum.com/t6544-wendy-hamilton.html'
+        # 'http://vintage-erotica-forum.com/t10567-jolanda-egger.html'
+        # 'http://vintage-erotica-forum.com/t315097-katia.html'
+        # 'http://vintage-erotica-forum.com/t53989-zahra-norbo.html'
+        # 'http://vintage-erotica-forum.com/t201703-sylvia-hand.html'
+       # 'http://vintage-erotica-forum.com/t8557-bonnie-logan.html'
+       # 'http://vintage-erotica-forum.com/t201391-sasha-vinni.html'
+       # 'http://vintage-erotica-forum.com/t8213-candace-l-collins.html'
+       # 'http://vintage-erotica-forum.com/t7304-liz-glazowski.html'
+       # 'http://vintage-erotica-forum.com/t9128-penelope-parker.html'
+       # 'http://vintage-erotica-forum.com/t68754-joanne-szmereta.html'
+       # 'http://vintage-erotica-forum.com/t34826-marie-ekorre.html'
+       # 'http://vintage-erotica-forum.com/t4575-karen-thornton.html'
+       # 'http://vintage-erotica-forum.com/t11737-antonia-bell.html'
+       # 'http://vintage-erotica-forum.com/t5578-donna-edmondson.html'
+       # 'http://vintage-erotica-forum.com/t201605-stephanie-page.html'
+       # 'http://vintage-erotica-forum.com/t173-erica-amp-nicole-amp-jaclyn-dahm.html'
+       'http://vintage-erotica-forum.com/t7787-rowan-moore.html'
     ]
-
+    
     headers = {
            'access-control-allow-origin' : '*',
            'Request Method' : 'GET',
@@ -62,8 +91,6 @@ class DD:
 
         return self.last_page
 
-        
-
     
     def write_all_pages_urls_of_model(self, url):
         f = open(DD.HOME_DIR + self.model_name + '/' + self.model_name + '.txt', 'w')
@@ -88,58 +115,37 @@ class DD:
             
             for i in self.all_posts:
                 try:
-                    print('\n\n', i['id'], end='\n')
+                    print(i['id'], end='\n')
                     a_ = i.find_all('a', attrs={'target': '_blank'})
                     if not a_ is None:
                         for i_ in a_:
-                            self.im = i_['href']
-                                                        
-                            self.soup_of_image = self.get_soup(self.im)
+                            self.im = i_['href']  
 
-                            try:
-                                self.foto_url = self.soup_of_image.find_all('img')
-
-                                for img in self.foto_url:
-                                    if not 'logo_resized' in img['src']:
-                                        print(img['src'])
-                                
-                                        self.filename = img['src'][-13:]
-                                        self.r = requests.get(img['src'], stream=True)
-
-                                        if self.r.status_code == 200:
-                                            self.r.raw.decode_content = True
-
-                                            self.path = DD.HOME_DIR + self.model_name + '/' + self.filename
-
-                                            with open(self.path,'wb') as f:
-                                                time.sleep(2)
-                                                shutil.copyfileobj(self.r.raw, f, 50000)
-                                                
-
-                            except Exception as e:
-                                print(e)
-                                pass
-                    
-                    # timer 30 sec after every post
-                    for i in range(61, 0, -1):
-                        sys.stdout.write(str(i) + ' ')
-                        sys.stdout.flush()
-                        time.sleep(1)
-
+                            # getting the dinamically changed url
+                            self.r = Request(self.im, headers={'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64)' \
+                                                          'AppleWebKit/537.36 (KHTML, like Gecko)' \
+                                                          'Chrome/72.0.3626.121 Safari/537.36'})
+                            self.webpage = urlopen(self.r)
                             
+                            print(self.webpage.geturl())
+                            f2.write(self.webpage.geturl())
+                            f2.write('\n')
+
                 except TypeError:
                     pass
 
 
         f.close()
         f2.close()
-    
+
+
 
 
 dd = DD()
 
 for url in DD.urls:
     dd.get_name(url)
-    dd.get_last_page(url)
-    dd.write_all_pages_urls_of_model(url)
+    # dd.get_last_page(url)
+    # dd.write_all_pages_urls_of_model(url)
     dd.get_all_fotos_url_of_model()
+
