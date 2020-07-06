@@ -6,7 +6,6 @@ import shutil
 from urllib.request import Request, urlopen  # https://qna.habr.com/q/167569
 
 
-
 class DD:
 
     HOME_DIR = '/home/o/Документы/PYTHON_SCRIPTS/ero/dd/'
@@ -134,9 +133,63 @@ class DD:
                 except TypeError:
                     pass
 
-
         f.close()
         f2.close()
+
+
+
+    def main(self):
+        f = open(self.model_name + '/' + self.model_name + '_links.txt', 'r')
+    
+        for link in f:
+            foto_post = link.strip()
+            print(foto_post)
+
+            if 'imagevenue' in foto_post:            
+                self.soup = self.get_soup(foto_post)
+                img = self.soup.find('img', attrs={'src': re.compile('.*imagevenue.*')})
+                if img is not None:
+                    img_link = img['src']
+                    self.download_image(img_link)
+
+
+            if 'imagebam' in foto_post:            
+                self.soup = self.get_soup(foto_post)
+                img = self.soup.find('img', attrs={'src': re.compile('.*imagebam.*')})
+                if img is not None:
+                    img_link = img['src']
+                    self.download_image(img_link)
+
+
+            if 'pimpandhost' in foto_post:            
+                self.soup = self.get_soup(foto_post)
+                img = self.soup.find('img', attrs={'src': re.compile('.*pimpandhost.*')})
+                if img is not None:
+                    img_link = img['src']
+                    self.download_image(img_link)
+
+
+            if 'imgbox' in foto_post:            
+                self.soup = self.get_soup(foto_post)
+                img = self.soup.find('img', attrs={'src': re.compile('.*imgbox.*')})
+                if img is not None:
+                    img_link = img['src']
+                    self.download_image(img_link)
+
+
+    
+    def download_image(self, url):
+        self.filename = url[-13:]
+        self.r = requests.get(url, stream=True)
+
+        if self.r.status_code == 200:
+            self.path = DD.HOME_DIR + self.model_name + '/' + self.filename
+
+            with open(self.path,'wb') as f:
+                shutil.copyfileobj(self.r.raw, f)
+                time.sleep(1.5)
+                shutil.copyfileobj(self.r.raw, f, 50000)
+
 
 
 
@@ -147,5 +200,32 @@ for url in DD.urls:
     dd.get_name(url)
     # dd.get_last_page(url)
     # dd.write_all_pages_urls_of_model(url)
-    dd.get_all_fotos_url_of_model()
+    # dd.get_all_fotos_url_of_model()
+    dd.main()
 
+
+
+
+'''
+
+url = 'https://www.imagevenue.com/view/o/?i=72490_rowan_moore-01_123_1114lo.jpg&h=img162'
+
+session = requests.Session()
+request = session.get(url)
+soup = bs(request.content, 'html.parser')
+    
+try:
+    a_continue = soup.find('a', attrs={'title': re.compile('.*ontinue.*')})
+    a_continue_href = a_continue['href']
+    request = session.get(a_continue_href)
+    soup = bs(request.content, 'html.parser')
+    img = soup.find('img', attrs={'src': re.compile('.*imagevenue.*')})
+    print(img['src'])
+    # print(f"a_continue_href = {a_continue_href}")
+except (AttributeError, TypeError):
+    # print(foto_post)
+    request = session.get(url)
+    soup = bs(request.content, 'html.parser')
+    img = soup.find('img', attrs={'src': re.compile('.*imagevenue.*')})
+    print(img['src'])
+'''
