@@ -79,7 +79,6 @@ class DD:
             self.last_page = re.search(r'page=(\d+)', self.last_page['href']).group(0).replace('page=', '')
             print(self.last_page)
             
-
         except Exception as e:
             print(e)
             self.last_page = re.search(r'of (\d*)', self.soup.find('div', class_='pagenav awn-ignore'). \
@@ -142,42 +141,59 @@ class DD:
         f = open(self.model_name + '/' + self.model_name + '_links.txt', 'r')
     
         for link in f:
-            foto_post = link.strip()
-            print(foto_post)
-
-            if 'imagevenue' in foto_post:            
+            try:
+                foto_post = link.strip()
                 self.soup = self.get_soup(foto_post)
-                img = self.soup.find('img', attrs={'src': re.compile('.*imagevenue.*')})
-                if img is not None:
-                    img_link = img['src']
-                    self.download_image(img_link)
+
+                if 'imagevenue' in foto_post:            
+                    img = self.soup.find('img', attrs={'src': re.compile('.*imagevenue.*')})
+                    if img is not None:
+                        img_link = img['src']
+                        print(foto_post, ' --> ', img_link)
+                        self.download_image(img_link)
+                        self.timer(3)
 
 
-            if 'imagebam' in foto_post:            
-                self.soup = self.get_soup(foto_post)
-                img = self.soup.find('img', attrs={'src': re.compile('.*imagebam.*')})
-                if img is not None:
-                    img_link = img['src']
-                    self.download_image(img_link)
+                if 'imagebam' in foto_post:            
+                    img = self.soup.find('img', attrs={'src': re.compile('.*imagebam.*')})
+                    if img is not None:
+                        img_link = img['src']
+                        print(foto_post, ' --> ', img_link)
+                        self.download_image(img_link)
+                        self.timer(3)
 
 
-            if 'pimpandhost' in foto_post:            
-                self.soup = self.get_soup(foto_post)
-                img = self.soup.find('img', attrs={'src': re.compile('.*pimpandhost.*')})
-                if img is not None:
-                    img_link = img['src']
-                    self.download_image(img_link)
+                if 'pimpandhost' in foto_post:            
+                    img = self.soup.find('img', attrs={'src': re.compile('.*pimpandhost.*')})
+                    if img is not None:
+                        img_link = img['src'].replace('//ist', 'https://www.ist')
+                        print(foto_post, ' --> ', img_link)
+                        self.download_image(img_link)
+                        self.timer(3)
 
 
-            if 'imgbox' in foto_post:            
-                self.soup = self.get_soup(foto_post)
-                img = self.soup.find('img', attrs={'src': re.compile('.*imgbox.*')})
-                if img is not None:
-                    img_link = img['src']
-                    self.download_image(img_link)
+                if 'imgbox' in foto_post:            
+                    img = self.soup.find('img', attrs={'src': re.compile('.*imgbox.*')})
+                    if img is not None:
+                        img_link = img['src']
+                        print(foto_post, ' --> ', img_link)
+                        self.download_image(img_link)
+                        self.timer(3)
 
+                else:
+                    print(foto_post)          
+            
+            except Exception as e:
+                print(e)
+                continue
 
+    def timer(self, number):
+        for i in range(number, 0, -1):  
+            sys.stdout.write(str(i) + ' ')  
+            sys.stdout.flush()  
+            time.sleep(1)
     
+
     def download_image(self, url):
         self.filename = url[-13:]
         self.r = requests.get(url, stream=True)
