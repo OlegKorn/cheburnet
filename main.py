@@ -20,7 +20,7 @@ URLS = [
 ]
 
 links = 'G:/Desktop/links.txt'
-home = 'G:/Desktop/ЭКОЛОГИЯ/'
+home = 'G:/Desktop/1/'
 
 
 def get_links():
