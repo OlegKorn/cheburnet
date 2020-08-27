@@ -77,7 +77,7 @@ def save_img():
                 if 'imagebam' in url:
                     print("'imagebam' in url")
                     session = requests.Session()  
-                    sleep(5)                  
+                    # sleep(5)                  
                     request = session.get(url, verify=False)      # verify=False ----> https://stackoverflow.com/questions/23013220/max-retries-exceeded-with-url-in-requests
                     soup = bs(request.content, 'html.parser')
                     
@@ -96,23 +96,47 @@ def save_img():
                         index = (len(src) - 15)
                         open(home + src[index:], "wb").write(image)
 
-                    else:
+                    if img is None:
                         img_link = soup.find('a', title='Continue to your image').get('href')
                         request = session.get(img_link)
                         soup = bs(request.content, 'html.parser')
                         src = soup.find('img', class_='image').get('src').strip()
                         
-                        print('==============================\n')
+                        print('==============================')
                         print(src)
-                        print('\n=============================\n')
+                        print('============================')
 
                         r = requests.get(src, stream=True)
                         image = r.raw.read()
                         index = (len(src) - 15)
                         open(home + src[index:], "wb").write(image)
 
+                if 'pimpandhost' in url:
+                    print("'pimpandhost' in url")
+                    session = requests.Session()                    
+                    request = session.get(url, verify=False)      # verify=False ----> https://stackoverflow.com/questions/23013220/max-retries-exceeded-with-url-in-requests
+                    soup = bs(request.content, 'html.parser')
+                    img = soup.find('div', class_='img-wrapper')
+
+                    if img:
+                        src = img.find('img').get('src').replace('//ist', 'ist')
+                        if '%20' in src:
+                            src = src.replace('%20', ' ')
+
+                        print('==============================')
+                        print(src)
+                        print('=============================')
+                    
+                        r = requests.get(src, stream=True)
+                        image = r.raw.read()
+                        index = (len(src) - 15)
+                        open(home + src[index:], "wb").write(image)
+
+                    if img is None:
+                        print('problem in pimpandhost, maybe "continue to..."')
+                        
                 else:
-                    pass
+                    print(url)
 
 
                 #session = requests.Session()
@@ -130,6 +154,12 @@ def save_img():
             pass
 
 
-
 # get_links_of_imgs()
 save_img()
+
+
+'''
+session = requests.Session()
+request = session.get(url)
+soup = bs(request.content, 'html.parser')
+'''
