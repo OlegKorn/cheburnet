@@ -94,6 +94,7 @@ def save_img():
                         r = requests.get(src, stream=True)
                         image = r.raw.read()
                         index = (len(src) - 15)
+                        sleep(1)
                         open(home + src[index:], "wb").write(image)
 
                     if img is None:
@@ -109,19 +110,47 @@ def save_img():
                         r = requests.get(src, stream=True)
                         image = r.raw.read()
                         index = (len(src) - 15)
+                        sleep(1)
                         open(home + src[index:], "wb").write(image)
 
                 if 'pimpandhost' in url:
-                    print("'pimpandhost' in url")
+                    try:
+                        print("'pimpandhost' in url")
+                        session = requests.Session()                    
+                        request = session.get(url, verify=False)      # verify=False ----> https://stackoverflow.com/questions/23013220/max-retries-exceeded-with-url-in-requests
+                        soup = bs(request.content, 'html.parser')
+                        img = soup.find('div', class_='img-wrapper')
+
+                        if img:
+                            src = img.find('img').get('src').replace('//ist', 'http://ist')
+
+                            print('==============================')
+                            print(src)
+                            print('=============================')
+                        
+                            r = requests.get(src, stream=True)
+                            image = r.raw.read()
+                            index = (len(src) - 20)
+                            sleep(1)
+                            open(home + src[index:], "wb").write(image)
+
+                    except Exception as e:
+                        print("pimpandhost: " + e)
+                        pass
+
+                    if img is None:
+                        print('problem in pimpandhost, maybe "continue to..."')
+                        
+
+                if 'imagevenue' in url:
+                    print("'imagevenue' in url")
                     session = requests.Session()                    
                     request = session.get(url, verify=False)      # verify=False ----> https://stackoverflow.com/questions/23013220/max-retries-exceeded-with-url-in-requests
                     soup = bs(request.content, 'html.parser')
-                    img = soup.find('div', class_='img-wrapper')
+                    img = soup.find('div', class_='card-body').a.img
 
                     if img:
-                        src = img.find('img').get('src').replace('//ist', 'ist')
-                        if '%20' in src:
-                            src = src.replace('%20', ' ')
+                        src = img.get('src')
 
                         print('==============================')
                         print(src)
@@ -130,35 +159,50 @@ def save_img():
                         r = requests.get(src, stream=True)
                         image = r.raw.read()
                         index = (len(src) - 15)
+                        sleep(1)
                         open(home + src[index:], "wb").write(image)
 
                     if img is None:
-                        print('problem in pimpandhost, maybe "continue to..."')
-                        
-                else:
-                    print(url)
+                        print('problem in imagevenue, maybe "continue to..."')
 
+                if 'imgbox' in url:
+                    print("'imgbox' in url")
+                    session = requests.Session()                    
+                    request = session.get(url, verify=False)      # verify=False ----> https://stackoverflow.com/questions/23013220/max-retries-exceeded-with-url-in-requests
+                    soup = bs(request.content, 'html.parser')
+                    img = soup.find('img', class_='image-content')
 
-                #session = requests.Session()
-                #request = session.get(url.strip())
-                #soup = bs(request.content, 'html.parser')
-                #img = soup.find('img', class_='photomodel-image').get('src')
-                
-                #print(img)
-                #r = requests.get(img, stream=True)
-                #image = r.raw.read()
-                #open(home + img[70:], "wb").write(image)
+                    if img:
+                        src = img.get('src')
+
+                        print('==============================')
+                        print(src)
+                        print('=============================')
+                    
+                        r = requests.get(src, stream=True)
+                        image = r.raw.read()
+                        index = (len(src) - 15)
+                        sleep(1)
+                        open(home + src[index:], "wb").write(image)
+
+                    if img is None:
+                        print('problem in imgbox, maybe "continue to..."')
+
+                if 'someimage' in url:
+                    pass
 
         except Exception as e:
             print(e)
             pass
 
 
-# get_links_of_imgs()
+get_links_of_imgs()
 save_img()
 
 
 '''
+from bs4 import BeautifulSoup as bs
+import requests
 session = requests.Session()
 request = session.get(url)
 soup = bs(request.content, 'html.parser')
