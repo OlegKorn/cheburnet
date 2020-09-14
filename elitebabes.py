@@ -13,10 +13,11 @@ headers = {'access-control-allow-origin' : '*',
            'User-Agent' : 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36'
 }
 
-URL = 'https://www.elitebabes.com/model/paloma-c/'
+URL = 'https://www.elitebabes.com/model/amanda-b/'
+
 MODEL_NAME = URL.replace('https://www.elitebabes.com/model/', '').replace('/', '')
 
-home = '/home/o/Документы/PYTHON_SCRIPTS/ero/elitbabes/' + MODEL_NAME + '/'
+home = 'G:/Desktop/py/elect/' + MODEL_NAME + '/'
 fi = home + MODEL_NAME + '.txt'
 fi1 = home + MODEL_NAME + '_links.txt'
 
@@ -25,7 +26,7 @@ fi1 = home + MODEL_NAME + '_links.txt'
 def main():
     
     if not os.path.exists(home):
-	    os.mkdir(home, mode=0o777)
+        os.mkdir(home, mode=0o777)
 
     f = open(fi, 'w')
 
@@ -55,7 +56,6 @@ def save_urls():
     file = f.readlines()
     f1 = open(fi1, 'w')
     
-      
     for img_url in file:
 
         img_url_replaced = img_url.replace('\n', '')
@@ -93,14 +93,16 @@ def save_img():
         try:
         
             i = i.strip()
-           
-            filename = i.replace('/', '_')
 
+            _title = i.replace('/', '_')
+
+            t_len = len(_title) - 20
+            
             session = requests.Session()
             r = requests.get(i, stream=True)
             image = r.raw.read()
             print(i)
-            open(home + filename, "wb").write(image)
+            open(home + _title[t_len:], "wb").write(image)
         
         except Exception:
             print('error')
@@ -110,8 +112,8 @@ def save_img():
         
     f.close()
 
-main()
-save_urls()
+# main()
+# save_urls()
 save_img()
 
 
