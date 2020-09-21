@@ -1,7 +1,6 @@
-import requests, sys, os, time
+import requests, os
 import wget
 from bs4 import BeautifulSoup as bs
-
 
 
 '''
@@ -16,9 +15,7 @@ r = requests.get(url2, stream=True)
 image = r.raw.read()
 print(url2)
 open(home + '1.jpg', "wb").write(image)
-
 '''
-
 
 URL = 'https://www.hqbabes.com/babes/Claudia/'
 
@@ -27,7 +24,6 @@ MODEL_NAME = URL.replace('https://www.hqbabes.com/babes/', '').replace('/', '')
 home = 'G:/Desktop/py/hq/' + MODEL_NAME + '/'
 fi = home + MODEL_NAME + '.txt'
 fi1 = home + MODEL_NAME + '_links.txt'
-
 
 
 def main():
@@ -56,7 +52,6 @@ def main():
         pass
 
     #f.close()
-
 
 
 def save_urls():
@@ -88,11 +83,7 @@ def save_urls():
     #f1.close()
 
 
-
 def save_img():
-
-    n = 1
-
     f = open(fi1, 'r')
     
     for i in f:        
