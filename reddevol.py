@@ -1,7 +1,13 @@
 import requests
 from bs4 import BeautifulSoup as bs
 import re, os
+from time import sleep
+from progress.bar import Bar
 
+
+#counter progress bar
+counter = [1,2]
+bar = Bar('Countdown', max = len(counter))
 
 URL = 'https://reddevol.com/themes'
 
@@ -39,13 +45,16 @@ class RDV:
                 all_items_url = 'https://reddevol.com' + theme_a['href']
                 title = theme_a.text
 
-                if '"' in title:
-                    title = title.replace('"', '')
-                elif ':' in title:
-                    title = title.replace(':', '')
+                if '"' or ':' or ',' or '?' in title:
+                    title_normalized = title.replace('"', '') \
+                                            .replace(':', '') \
+                                            .replace(',', '') \
+                                            .replace('?', '')
+                else:
+                    title_normalized = theme_a.text
 
                 # create dirs for every theme
-                self.create_directory(title)
+                self.create_directory(title_normalized)
 
                 # get all items of theme
                 themes_soup = self.get_soup(all_items_url)
@@ -57,20 +66,21 @@ class RDV:
                     post_of_theme_titles = post_of_theme.find_all('h2', class_='header')
                     post_of_theme_urls = post_of_theme.find_all('h2', class_='header')
 
+                    # creating subdirs by name post_of_theme_title.text
+                    # in super dir of theme
                     for post_of_theme_title in post_of_theme_titles:
-                        # create subdirs by name post_of_theme_title.text
-                        # in super dir of theme 
 
                         # normalize post_of_theme_title.text
                         # ", : not allowed at for naming a dir in Win
-                        if '"' in post_of_theme_title.text:
-                            post_of_theme_title_normalized = post_of_theme_title.text.replace('"', '')
-                        elif ':' in post_of_theme_title.text:
-                            post_of_theme_title_normalized = post_of_theme_title.text.replace(':', '')
+                        if '"' or ':' or ',' or '?' in post_of_theme_title.text: 
+                            post_of_theme_title_normalized = post_of_theme_title.text.replace('"', '') \
+                                                                                     .replace(':', '') \
+                                                                                     .replace(',', '') \
+                                                                                     .replace('?', '')
                         else:
                             post_of_theme_title_normalized = post_of_theme_title.text
 
-                        self.create_directory(title, post_of_theme_title_normalized)
+                        self.create_directory(title_normalized, post_of_theme_title_normalized)
                     
                     for post_of_theme_url in post_of_theme_urls:
                         # get soup of post
@@ -79,10 +89,19 @@ class RDV:
 
                         # data of post
                         data_ = self.get_post_data(u)
-                        self._write(title, post_of_theme_title_normalized, data_)
+                        
+                        self._write(
+                            title, 
+                            post_of_theme_title_normalized, 
+                            data_
+                        )
 
-                    # print(post_of_theme_title, post_of_theme_url, sep='\n')
-                    
+                        # countdown (sleep() 10 seconds)
+                        for item in counter:
+                            bar.next()
+                            sleep(1)
+                        bar.finish()
+
 
     def get_post_data(self, url):
         soup = self.get_soup(url)
@@ -110,7 +129,7 @@ class RDV:
 
 
     def _write(self, theme:str, subtheme:str, data, home=home):
-        f = open((home + theme + '/' + subtheme + '/' + subtheme + '.txt'), 'w')
+        f = open((home + theme + '/' + subtheme + '/' + subtheme + '.txt'), 'w', encoding='utf-8')
         f.write(data)
         f.close()
 
