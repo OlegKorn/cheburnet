@@ -11,7 +11,6 @@ links_by_month = home + '_get_posts_by_theme.txt'
 all_posts = home + '_all_posts.txt'
 
 
-
 class RDV:
 
     def __init__(self):
@@ -37,17 +36,55 @@ class RDV:
             
             for theme_a in theme.find_all('a'):
 
-                url = theme_a['href']
+                all_items_url = 'https://reddevol.com' + theme_a['href']
                 title = theme_a.text
 
                 if '"' in title:
                     title = title.replace('"', '')
+                elif ':' in title:
+                    title = title.replace(':', '')
 
                 # create dirs for every theme
                 self.create_directory(title)
 
+                # get all items of theme
+                themes_soup = self.get_soup(all_items_url)
 
-    def get_post_data(self, url='https://reddevol.com/articles/zhizn_i_smert_kosmicheskogo_turizma'):
+                # get all posts of item
+                all_posts_of_theme = themes_soup.find_all('div', attrs={'class': 'ui items'})
+                
+                for post_of_theme in all_posts_of_theme:
+                    post_of_theme_titles = post_of_theme.find_all('h2', class_='header')
+                    post_of_theme_urls = post_of_theme.find_all('h2', class_='header')
+
+                    for post_of_theme_title in post_of_theme_titles:
+                        # create subdirs by name post_of_theme_title.text
+                        # in super dir of theme 
+
+                        # normalize post_of_theme_title.text
+                        # ", : not allowed at for naming a dir in Win
+                        if '"' in post_of_theme_title.text:
+                            post_of_theme_title_normalized = post_of_theme_title.text.replace('"', '')
+                        elif ':' in post_of_theme_title.text:
+                            post_of_theme_title_normalized = post_of_theme_title.text.replace(':', '')
+                        else:
+                            post_of_theme_title_normalized = post_of_theme_title.text
+
+                        self.create_directory(title, post_of_theme_title_normalized)
+                    
+                    for post_of_theme_url in post_of_theme_urls:
+                        # get soup of post
+                        u = 'https://reddevol.com' + post_of_theme_url.a['href']
+                        self.get_soup(u)
+
+                        # data of post
+                        data_ = self.get_post_data(u)
+                        self._write(title, post_of_theme_title_normalized, data_)
+
+                    # print(post_of_theme_title, post_of_theme_url, sep='\n')
+                    
+
+    def get_post_data(self, url):
         soup = self.get_soup(url)
         
         title = soup.find('div', class_='inner-text').h1.text
@@ -59,7 +96,8 @@ class RDV:
                             .replace('\n\n\n\n\n\n\n\n', '') \
                             .replace('\n\n\n\n\n', '')
         
-        print(title, text_normalized, sep='\n')
+        data = (title + '\n\n' + url + '\n\n' + text_normalized + '\n')
+        return data
 
 
     def create_directory(self, theme='', theme_item=''):
@@ -71,8 +109,13 @@ class RDV:
             print(f'{path_} CREATED')
 
 
+    def _write(self, theme:str, subtheme:str, data, home=home):
+        f = open((home + theme + '/' + subtheme + '/' + subtheme + '.txt'), 'w')
+        f.write(data)
+        f.close()
 
 r = RDV()
-r.get_post_data()
-# r.get_themes()
+# print(r.get_post_data())
+#r._write('Blue Origin', 'Жизнь и смерть космического туризма', 'gsdsd')
+r.get_themes()
 
