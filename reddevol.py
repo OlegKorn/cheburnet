@@ -26,7 +26,8 @@ class RDV:
         try: 
             session = requests.Session()
             request = session.get(url)
-            soup = bs(request.content, 'html.parser')
+            if request.status_code == 200:
+                soup = bs(request.content, 'html.parser')
             return soup
         except Exception as e:
             print(e)
@@ -103,24 +104,30 @@ class RDV:
     def get_post_data(self, url):
         soup = self.get_soup(url)
         
-        title = soup.find('div', class_='inner-text').h1.text
-        text = soup.find('div', attrs={'class': 'thirteen wide column'}).get_text()
-        text_normalized = re.sub(r'<.*?>', '', text).strip() \
+        try:
+            title = soup.find('div', class_='inner-text').h1.text    
+            text = soup.find('div', attrs={'class': 'thirteen wide column'}).get_text()
+            text_normalized = re.sub(r'<.*?>', '', text).strip() \
                             .replace('Comments System WIDGET PACK', '') \
                             .replace('Предыдущая статья', '') \
                             .replace('Следующая статья', '') \
                             .replace('\n\n\n\n\n\n\n\n', '') \
                             .replace('\n\n\n\n\n', '')
         
-        data = (title + '\n\n' + url + '\n\n' + text_normalized + '\n')
+            data = (title + '\n\n' + url + '\n\n' + text_normalized + '\n')
+            
+        except Exception as e:
+            data = 'Error'
+            print(e)
+
         return data
+        
 
 
     def create_directory(self, theme='', theme_item=''):
         path_ = home + theme + '/' + theme_item
         if os.path.exists(path_):
             print(f'{path_} EXISTS')
-            print()
         else:
             os.mkdir(path_)
             print(f'{path_} CREATED')
@@ -135,4 +142,3 @@ r = RDV()
 # print(r.get_post_data())
 #r._write('Blue Origin', 'Жизнь и смерть космического туризма', 'gsdsd')
 r.get_themes()
-
