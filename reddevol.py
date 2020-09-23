@@ -12,9 +12,7 @@ bar = Bar('Countdown', max = len(counter))
 URL = 'https://reddevol.com/themes'
 
 home = 'G:/Desktop/py/lj/rdvl/'
-lj_text = home + 'reddevol.txt'
-links_by_month = home + '_get_posts_by_theme.txt'
-all_posts = home + '_all_posts.txt'
+
 
 
 class RDV:
@@ -53,6 +51,8 @@ class RDV:
                 else:
                     title_normalized = theme_a.text
 
+                print(title_normalized)
+
                 # create dirs for every theme
                 self.create_directory(title_normalized)
 
@@ -64,7 +64,6 @@ class RDV:
                 
                 for post_of_theme in all_posts_of_theme:
                     post_of_theme_titles = post_of_theme.find_all('h2', class_='header')
-                    post_of_theme_urls = post_of_theme.find_all('h2', class_='header')
 
                     # creating subdirs by name post_of_theme_title.text
                     # in super dir of theme
@@ -82,9 +81,7 @@ class RDV:
 
                         self.create_directory(title_normalized, post_of_theme_title_normalized)
                     
-                    for post_of_theme_url in post_of_theme_urls:
-                        # get soup of post
-                        u = 'https://reddevol.com' + post_of_theme_url.a['href']
+                        u = 'https://reddevol.com' + post_of_theme_title.a['href']
                         self.get_soup(u)
 
                         # data of post
@@ -96,7 +93,7 @@ class RDV:
                             data_
                         )
 
-                        # countdown (sleep() 10 seconds)
+                        # countdown (sleep() .. seconds)
                         for item in counter:
                             bar.next()
                             sleep(1)
@@ -123,6 +120,7 @@ class RDV:
         path_ = home + theme + '/' + theme_item
         if os.path.exists(path_):
             print(f'{path_} EXISTS')
+            print()
         else:
             os.mkdir(path_)
             print(f'{path_} CREATED')
