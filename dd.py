@@ -202,16 +202,18 @@ class DD:
     
 
     def download_image(self, url):
-        self.filename = url[-13:]
-        self.r = requests.get(url, stream=True)
+        # pass thumbs of video 
+        if not 'avi_' in url:
+            self.filename = url[-13:]
+            self.r = requests.get(url, stream=True)
 
-        if self.r.status_code == 200:
-            self.path = DD.HOME_DIR + self.model_name + '/' + self.filename
+            if self.r.status_code == 200:
+                self.path = DD.HOME_DIR + self.model_name + '/' + self.filename
 
-            with open(self.path,'wb') as f:
-                shutil.copyfileobj(self.r.raw, f)
-                time.sleep(1.5)
-                shutil.copyfileobj(self.r.raw, f, 50000)
+                with open(self.path,'wb') as f:
+                    shutil.copyfileobj(self.r.raw, f)
+                    time.sleep(1.5)
+                    shutil.copyfileobj(self.r.raw, f, 50000)
 
 
 
@@ -223,5 +225,5 @@ for url in DD.urls:
     dd.get_name(url)
     #dd.get_last_page(url)
     #dd.write_all_pages_urls_of_model(url)
-    dd.get_all_fotos_url_of_model()
-    #dd.main()
+    #dd.get_all_fotos_url_of_model()
+    dd.main()
