@@ -8,7 +8,7 @@ from urllib.request import Request, urlopen  # https://qna.habr.com/q/167569
 
 class DD:
 
-    HOME_DIR = '/home/o/Документы/PYTHON_SCRIPTS/ero/dd/'
+    HOME_DIR = 'G:/Desktop/py/ve/'
     urls = [
         # 'http://vintage-erotica-forum.com/t19047-lynne-austin.html',
         # 'http://vintage-erotica-forum.com/t17350-tiffany-sloan.html'
@@ -38,7 +38,8 @@ class DD:
        # 'http://vintage-erotica-forum.com/t5578-donna-edmondson.html'
        # 'http://vintage-erotica-forum.com/t201605-stephanie-page.html'
        # 'http://vintage-erotica-forum.com/t173-erica-amp-nicole-amp-jaclyn-dahm.html'
-       'http://vintage-erotica-forum.com/t7787-rowan-moore.html'
+       # 'http://vintage-erotica-forum.com/t7787-rowan-moore.html'
+       'http://vintage-erotica-forum.com/t4499-natasha-lester.html'
     ]
     
     headers = {
@@ -58,7 +59,7 @@ class DD:
         if not os.path.exists(DD.HOME_DIR + self.model_name):
             os.mkdir(DD.HOME_DIR + self.model_name, mode=0o777)
         else:
-        	print(f'{DD.HOME_DIR + self.model_name} exists')
+            print(f'{DD.HOME_DIR + self.model_name} exists')
 
         return self.model_name
 
@@ -81,10 +82,10 @@ class DD:
             
         except Exception as e:
             print(e)
-            self.last_page = re.search(r'of (\d*)', self.soup.find('div', class_='pagenav awn-ignore'). \
-                             find_all('td')[0].text). \
-                             group(0). \
-                             replace('of ', '')
+            self.last_page = re.search(r'of (\d*)', self.soup.find('div', class_='pagenav awn-ignore') \
+                               .find_all('td')[0].text) \
+                               .group(0) \
+                               .replace('of ', '')
             print(self.last_page)
 
         return self.last_page
@@ -105,11 +106,13 @@ class DD:
 
     def get_all_fotos_url_of_model(self):
         f = open(DD.HOME_DIR + self.model_name + '/' + self.model_name + '.txt', 'r')
-        f2 = open(DD.HOME_DIR + self.model_name + '/' + self.model_name + '_links.txt', 'w')
+        f2 = open(DD.HOME_DIR + self.model_name + '/' + self.model_name + '_links.txt', 'w+')
+        
         for url in f:
             regex = re.compile('.*post_message_.*')
             self.soup = self.get_soup(url)
             self.all_posts = self.soup.find_all('div', attrs={'id': regex})
+
             
             for i in self.all_posts:
                 try:
@@ -117,19 +120,23 @@ class DD:
                     a_ = i.find_all('a', attrs={'target': '_blank'})
                     if not a_ is None:
                         for i_ in a_:
-                            self.im = i_['href']  
+                            self.im = i_['href'] 
 
-                            # getting the dinamically changed url
-                            self.r = Request(self.im, headers={'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64)' \
-                                                          'AppleWebKit/537.36 (KHTML, like Gecko)' \
-                                                          'Chrome/72.0.3626.121 Safari/537.36'})
-                            self.webpage = urlopen(self.r)
-                            
-                            print(self.webpage.geturl())
-                            f2.write(self.webpage.geturl())
-                            f2.write('\n')
+                            if 'imagevenue' or 'imagebam' or 'pimpandhost' or 'imgbox' in self.im:
+                                # getting the dinamically changed url
+                                self.r = Request(self.im)
+                                try:
+                                    webpage = urlopen(self.r)
+                                
+                                    print(webpage.geturl())
+                                    _ = webpage.geturl()
+                                    f2.write(_)
+                                    f2.write('\n')
+                                except:
+                                    print('ERROR')
+                                    pass
 
-                except TypeError:
+                except:
                     pass
 
         f.close()
@@ -214,34 +221,7 @@ dd = DD()
 
 for url in DD.urls:
     dd.get_name(url)
-    # dd.get_last_page(url)
-    # dd.write_all_pages_urls_of_model(url)
-    # dd.get_all_fotos_url_of_model()
-    dd.main()
-
-
-
-
-'''
-
-url = 'https://www.imagevenue.com/view/o/?i=72490_rowan_moore-01_123_1114lo.jpg&h=img162'
-
-session = requests.Session()
-request = session.get(url)
-soup = bs(request.content, 'html.parser')
-    
-try:
-    a_continue = soup.find('a', attrs={'title': re.compile('.*ontinue.*')})
-    a_continue_href = a_continue['href']
-    request = session.get(a_continue_href)
-    soup = bs(request.content, 'html.parser')
-    img = soup.find('img', attrs={'src': re.compile('.*imagevenue.*')})
-    print(img['src'])
-    # print(f"a_continue_href = {a_continue_href}")
-except (AttributeError, TypeError):
-    # print(foto_post)
-    request = session.get(url)
-    soup = bs(request.content, 'html.parser')
-    img = soup.find('img', attrs={'src': re.compile('.*imagevenue.*')})
-    print(img['src'])
-'''
+    #dd.get_last_page(url)
+    #dd.write_all_pages_urls_of_model(url)
+    dd.get_all_fotos_url_of_model()
+    #dd.main()
