@@ -1,7 +1,9 @@
-import requests, os, time, re
+import requests, sys, os, time, re
 from bs4 import BeautifulSoup as bs
 
-URL = 'https://nude-gals.com/model_page.php?model_id=586'
+
+URL = 'https://nude-gals.com/model_page.php?model_id=2674'
+
 
 class NG:
 
@@ -34,10 +36,14 @@ class NG:
 
 
     def get_last_page(self):
-        self.last_page_href = self.get_soup(URL) \
-                             .find('a', attrs={'class': 'number btn btn-inverse last btn-md'})['href']
+        try:
+            self.last_page_href = self.get_soup(URL) \
+                                      .find('a', attrs={'class': 'number btn btn-inverse last btn-md'})['href']
+            self.last_page = re.search(('(?<=&pp=)(.*)'), self.last_page_href).group()
         
-        self.last_page = re.search(('(?<=&pp=)(.*)'), self.last_page_href).group()
+        except:
+            self.last_page = 1
+
         return self.last_page
 
 
@@ -105,5 +111,6 @@ class NG:
 
 
 ng = NG()
-# ng.get_all_fotos()
+ng.get_all_posts()
+ng.get_all_fotos()
 ng.save_images()
