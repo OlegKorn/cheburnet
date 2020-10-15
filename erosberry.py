@@ -98,3 +98,116 @@ d = Downloader()
 #d.get_posts()
 d.get_imgs()
 
+
+
+'''
+import requests, sys, time
+from bs4 import BeautifulSoup as bs
+import wget
+
+
+URL = 'https://www.erosberry.com/model/Veronika_F.html'
+
+MODEL_NAME = 'veronica-f'
+
+home = 'G:/Desktop/py/eb/veronika-f/'
+fi = home + MODEL_NAME + '_erosberry.txt'
+fi1 = home + MODEL_NAME + '_erosberry_links.txt'
+
+
+
+def main():
+    
+    f = open(fi, 'w')
+
+    try: 
+        session = requests.Session()
+        request = session.get(URL)
+        soup = bs(request.content, 'html.parser')
+
+        for imgset in soup.find('div', class_='girl_thumbs') \
+                          .find_all('div', class_='container'):
+            set_link = 'https://www.erosberry.com' + imgset.a['href'].strip()
+            f.write(set_link + '\n')
+
+    except Exception as e:
+        print(e)
+        pass
+
+    f.close()
+
+
+
+def save_urls():
+    
+    f = open(fi, 'r')
+    file = f.readlines()
+    f1 = open(fi1, 'w')
+    
+    for img_url in file:
+
+        img_url_replaced = img_url.replace('\n', '')
+        pattern = img_url_replaced.replace('https://www.erosberry.com/', '')
+
+        session = requests.Session()
+        request = session.get(img_url_replaced)
+        soup = bs(request.content, 'html.parser')
+            
+        #image link
+        for post in soup.find_all('a'):
+            try:
+                link = post['href']
+                if pattern in link:
+                    print(link)
+                    f1.write('https://www.erosberry.com' + link)
+                    f1.write('\n')
+
+            except Exception:
+                pass
+
+        print(img_url_replaced + '\n')
+
+    f.close()
+    f1.close()
+
+
+def save_img():
+
+    f = open(fi1, 'r')
+    
+    for i in f:
+        
+        try:            
+            i = i.strip()
+            pattern = i.replace('https://www.erosberry.com/', '') \
+                       .replace('.html', '')
+
+            print('==================')
+            print(i)
+            print('==================')
+
+            session = requests.Session()
+            request = session.get(i)
+            soup = bs(request.content, 'html.parser')
+            
+            img_ = soup.find('a', class_='photo').img['src']
+            
+            img_link = 'https:' + img_.strip()
+            image_title = img_link[len(img_link)-6:len(img_link)]
+            print(pattern + image_title)
+
+            # wget.download(img_link, 'G:/Desktop/py/eb/')
+            r = requests.get(img_link, stream=True)
+            image = r.raw.read()
+            open(home + pattern + image_title, "wb").write(image)
+        
+        except Exception:
+            print('error')
+            continue
+        
+    f.close()
+
+# main()
+# save_urls()
+save_img()
+'''
