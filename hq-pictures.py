@@ -4,22 +4,28 @@ import wget, re
 
 
 URL = [
-    'https://hq-pictures.com/index.php?cat=227'
+    # 'https://hq-pictures.com/index.php?cat=227'
+    'https://hq-pictures.com/index.php?cat=422'
 ]
 
 root = 'https://www.hq-pictures.com/'
-
-
+home = 'G:/Desktop/py/hq-pictures/'
 
 
 def get_albums(URL):
-    
-    f = open(pics_txt, 'w')
 
     try: 
         session = requests.Session()
         request = session.get(URL)
         soup = bs(request.content, 'html.parser')
+
+        name = soup.find('td', class_='tableh1').find_all('a')[3].text
+
+        if not os.path.exists(home + name.strip()):
+            os.mkdir(home + name.strip(), mode=0o777)
+
+        pics_txt = home + f'{name}/{name}.txt'
+        f = open(pics_txt, 'w')
 
         # get urls of all albums
         for album in soup.find_all('tr', attrs={'class': 'tableb tableb_alternate'}):
@@ -99,19 +105,28 @@ def get_albums(URL):
     f.close()
 
 
-
 def downl():
 
+    home = 'G:/Desktop/py/hq-pictures/'
+
     try:
+        session = requests.Session()
+        request = session.get(URL[0])
+        soup = bs(request.content, 'html.parser')
+
+        name = soup.find('td', class_='tableh1').find_all('a')[3].text
+        pics_txt = home + f'{name}/{name}.txt'
+        
+        if not os.path.exists(home + name.strip()):
+            os.mkdir(home + name.strip(), mode=0o777)
     
         f = open(pics_txt, 'r')
         file = f.readlines()
         
         for album_url in file:
-
             album_url_normalized = album_url.replace('\n', '')
             print(album_url_normalized)
-            wget.download(album_url_normalized, home)
+            wget.download(album_url_normalized, (home + f'{name}/'))
 
     except Exception:
         print('error')
@@ -122,10 +137,5 @@ def downl():
 
 
 for i in URL:
-
-    home = 'G:/Desktop/py/hq-pictures/'
-    pics_txt = home + 'emma_w_pics.txt'
-
-    get_albums(i)
-    # get_pics()
-    # downl()
+    # get_albums(i)
+    downl()
