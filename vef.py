@@ -13,7 +13,6 @@ for (let i = 0; i < posts.length; i++) {
 arr__;
 '''
 
-
 import requests, os, time, sys
 from bs4 import BeautifulSoup as bs
 import re
@@ -81,15 +80,19 @@ class DD:
         return self.soup
 
 
+    '''
     def get_last_page(self, url):
         self.get_soup(url)
         self.soup = self.get_soup(url)
-        
+
         try:
-            self.last_page = self.soup.find('div', class_='pagenav awn-ignore').find('td', attrs={'nowrap': 'nowrap'}).a
+            self.last_page = self.soup.find('div', attrs={'class' : 'pagenav awn-ignore'}).find('td', attrs={'nowrap': 'nowrap'}).a
+
+            print(self.last_page)
+
             self.last_page = re.search(r'page=(\d+)', self.last_page['href']).group(0).replace('page=', '')
             print(self.last_page)
-            
+
         except Exception as e:
             print(e)
             self.last_page = re.search(r'of (\d*)', self.soup.find('div', class_='pagenav awn-ignore') \
@@ -100,7 +103,7 @@ class DD:
 
         return self.last_page
 
-    
+
     def write_all_pages_urls_of_model(self, url):
         f = open(DD.HOME_DIR + self.model_name + '/' + self.model_name + '.txt', 'w')
             
@@ -112,8 +115,29 @@ class DD:
             f.write('\n')
 
         f.close()
+    '''
     
 
+    def normalize(self, model_name = None):
+        
+        f = open(DD.HOME_DIR + self.model_name + '/' + 'imgs.txt', 'r')
+        txt_normalized = open(DD.HOME_DIR + self.model_name + '/' + 'normalized.txt', 'w')
+
+        for i in f:
+
+            if "vintage-erotica-forum" in i:
+                pass
+            elif "turboimagehost" in i:
+                pass
+            else:
+                normalized = re.search('"(.*?)"', i).group(1).replace('http://', 'https://')
+                txt_normalized.write(normalized + '\n')
+
+        f.close()
+        txt_normalized.close()
+
+
+    '''
     def get_all_fotos_url_of_model(self):
         f = open(DD.HOME_DIR + self.model_name + '/' + self.model_name + '.txt', 'r')
         f2 = open(DD.HOME_DIR + self.model_name + '/' + self.model_name + '_links.txt', 'w+')
@@ -151,13 +175,19 @@ class DD:
 
         f.close()
         f2.close()
+    '''
 
 
+    def main(self, model_name = None):
 
-    def main(self):
-        f = open(self.model_name + '/' + self.model_name + '_links.txt', 'r')
+        control_file = DD.HOME_DIR + self.model_name + '/' + 'control.txt'
+        control_f = open(control_file, 'w')
+
+        self.model_name = model_name
+
+        txt_normalized = open(DD.HOME_DIR + self.model_name + '/' + 'normalized.txt', 'r')
     
-        for link in f:
+        for link in txt_normalized:
             try:
                 foto_post = link.strip()
                 self.soup = self.get_soup(foto_post)
@@ -210,11 +240,17 @@ class DD:
                         self.timer(1)
 
                 else:
-                    pass          
+                    pass         
+
+                control_f.write(foto_post + '\n')
             
             except Exception as e:
                 print(e)
                 continue
+
+        txt_normalized.close()
+        control_f.close()
+
 
     def timer(self, number):
         for i in range(number, 0, -1):  
@@ -244,8 +280,9 @@ class DD:
 dd = DD()
 
 for url in DD.urls:
-    dd.get_name(url)
+    # dd.normalize(model_name = dd.get_name(url))
+    # dd.get_name(url)
     # dd.get_last_page(url)
     # dd.write_all_pages_urls_of_model(url)
     # dd.get_all_fotos_url_of_model()
-    dd.main()
+    dd.main(model_name = dd.get_name(url))
