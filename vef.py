@@ -1,4 +1,19 @@
-#/usr/bin/env python3
+'''
+delete arr__;
+
+// get all <a> of all <div id="post_message_...">
+let posts = document.querySelectorAll('[id^="post_message_"] a')
+
+arr__ = [];
+
+for (let i = 0; i < posts.length; i++) {
+    arr__.push(posts[i]["href"]);
+};
+
+arr__;
+'''
+
+
 import requests, os, time, sys
 from bs4 import BeautifulSoup as bs
 import re
