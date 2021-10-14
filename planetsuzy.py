@@ -13,7 +13,58 @@ initial_url = 'http://www.planetsuzy.org/t360180-p1-elizabeth-ryan-lizzie-ryan-a
 
 
 class PlanetS:
+    '''
+    Without banned like pimpandhost
+    '''
+    def download_from_file(self):
+        f = open("G:/Pictures/deni moor/porncoven.txt", "r")
+
+        data = f.readlines()
+
+        for i in data:
+            counter = 0
+
+            link = i.split(': "')[1].replace('"', '').strip()
+            if not ".zip" in i:
+                filename = link[-10::].replace("/", "")
+                soup = self.get_soup(link)
+            
+                try:
+                    if "imagevenue" in link:
+                        url = soup.find("div", class_="card-body").div.div.a.img['src']
+                        if url:
+                           self.download_file(url, filename)
+                    
+                    if "imgbox" in link:
+                        url = soup.find("div", class_="image-container").img['src']
+                        if url:
+                           self.download_file(url, filename)
+
+                    if "imagebam" in link:
+                        url = soup.find("div", class_="view-image").find_all("img")[1]['src']
+                        if url:
+                           self.download_file(url, filename)
+
+                    print(filename, " ", counter, " ", link, ' -> ', url, end='\n')
+                    counter += 0
+
+                except Exception as e:
+                    print(link, '->', e)
+                    break
+
+                   
+    def download_file(self, url, filename):
+        self.r = requests.get(url, stream=True)
+
+        if self.r.status_code == 200:
+            self.path = f"G:/Pictures/deni moor/{filename}.jpg"
+
+        with open(self.path,'wb') as f:
+            shutil.copyfileobj(self.r.raw, f)
+            time.sleep(1.5)
+            shutil.copyfileobj(self.r.raw, f, 50000)
    
+
     def get_name(self, url, create_dir=False,):
         self.model_name = re.search(r'\d+\-.*[0-9].(.*).html', url).group(1)
 
@@ -33,9 +84,20 @@ class PlanetS:
     def get_soup(self, url):
         self.session = requests.Session()
         self.request = self.session.get(url)
+        self.sc = self.request.status_code
         self.soup = bs(self.request.content, 'html.parser')
 
         return self.soup
+
+    
+    def get_r_via_TOR(self, url):
+        proxies = {
+            'http': 'socks5h://127.0.0.1:9150', 
+            'https': 'socks5h://127.0.0.1:9150'
+        }
+        session = requests.Session()
+        r = session.get(url, proxies=proxies)
+        return r
 
 
     def get_soup_via_TOR(self, url):
@@ -46,7 +108,9 @@ class PlanetS:
 
         session = requests.Session()
         r = session.get(url, proxies=proxies)
-        soup = bs(r.content, 'html.parser')
+        self.soup = bs(r.content, 'html.parser')
+
+        print(r.status_code)
         
         return self.soup
 
@@ -65,188 +129,9 @@ class PlanetS:
 
         return self.last_page
 
-    
-    def write_all_pages_urls_of_model(self, url):
-        self.model_name=self.get_name(initial_url)
-
-        f = open(HOME_DIR + self.model_name + '/' + self.model_name + '.txt', 'w')
-            
-        self.pages_num = self.get_last_page(url)
-        self.model_name = self.get_name(url)
-
-        for i in range(1, int(self.pages_num) + 1): 
-            self.url_ = url.replace('p1', 'p' + str(i)) 
-            print(self.url_)
-            
-            f.write(self.url_.strip())
-            f.write('\n')
-        f.close()
-     
-    '''
-    def normalize(self):
-        self.model_name=self.get_name(initial_url)
-
-        f = open(HOME_DIR + self.model_name + '/' + self.model_name + '.txt', 'r')
-        txt_normalized = open(HOME_DIR + self.model_name + '/' + 'normalized.txt', 'w')
-
-        for i in f:
-
-            if "vintage-erotica-forum" in i:
-                pass
-            elif "turboimagehost" in i:
-                pass
-            else:
-                normalized = re.search('"(.*?)"', i).group(1).replace('http://', 'https://')
-                txt_normalized.write(normalized + '\n')
-
-        f.close()
-        txt_normalized.close()
-    '''
-
-    def get_all_fotos_url_of_model(self):
-        self.model_name=self.get_name(initial_url)
-
-        logging.basicConfig(
-            filename=f'{HOME_DIR}{self.model_name}/{self.model_name}_links.txt.log', 
-            level=logging.INFO, format=FORMAT
-        )
-
-        f = open(HOME_DIR + self.model_name + '/' + self.model_name + '.txt', 'r')
-        
-        for url in f:
-            print(url)
-
-            regex = re.compile('.*post_message_.*')
-            self.soup = self.get_soup(url)
-            self.all_posts = self.soup.find_all('div', attrs={'id': regex})
-            
-            for i in self.all_posts:
-                try:
-                    print(i['id'], end='\n')
-                    a_ = i.find_all('a', attrs={'target': '_blank'})
-                    if not a_ is None:
-                        for i_ in a_:
-                            self.im = i_['href'] 
-                            if 'pimpandhost' in self.im:
-                                pass
-                            else:
-                                # getting the dinamically changed url
-                                self.r = Request(self.im)
-                                try:
-                                    webpage = urlopen(self.r)
-                                
-                                    print(webpage.geturl())
-                                    _ = webpage.geturl()
-                                    
-                                    logging.info(_)
-
-                                except:
-                                    print('ERROR')
-                                    pass
-                except:
-                    pass
-        f.close()
-
-    '''
-    def main(self, model_name = None):
-
-        control_file = DD.HOME_DIR + self.model_name + '/' + 'control.txt'
-        control_f = open(control_file, 'w')
-
-        self.model_name = model_name
-
-        txt_normalized = open(DD.HOME_DIR + self.model_name + '/' + 'normalized.txt', 'r')
-    
-        for link in txt_normalized:
-            try:
-                foto_post = link.strip()
-                self.soup = self.get_soup(foto_post)
-
-                if 'imagevenue' in foto_post:            
-                    img = self.soup.find('img', attrs={'src': re.compile('.*imagevenue.*')})
-                    if img is not None:
-                        img_link = img['src']
-                        print('========================')
-                        print(f'post: {foto_post}')
-                        print(f'img: {img_link}')
-                        print('========================')
-                        self.download_image(img_link)
-                        self.timer(1)
-
-
-                if 'imagebam' in foto_post:            
-                    img = self.soup.find('img', attrs={'src': re.compile('.*imagebam.*')})
-                    if img is not None:
-                        img_link = img['src']
-                        print('========================')
-                        print(f'post: {foto_post}')
-                        print(f'img: {img_link}')
-                        print('========================')
-                        self.download_image(img_link)
-                        self.timer(1)
-
-
-                if 'pimpandhost' in foto_post:            
-                    img = self.soup.find('img', attrs={'src': re.compile('.*pimpandhost.*')})
-                    if img is not None:
-                        img_link = img['src'].replace('//ist', 'https://www.ist')
-                        print('========================')
-                        print(f'post: {foto_post}')
-                        print(f'img: {img_link}')
-                        print('========================')
-                        self.download_image(img_link)
-                        self.timer(1)
-
-
-                if 'imgbox' in foto_post:            
-                    img = self.soup.find('img', attrs={'src': re.compile('.*imgbox.*')})
-                    if img is not None:
-                        img_link = img['src']
-                        print('========================')
-                        print(f'post: {foto_post}')
-                        print(f'img: {img_link}')
-                        print('========================')
-                        self.download_image(img_link)
-                        self.timer(1)
-
-                else:
-                    pass         
-
-                control_f.write(foto_post + '\n')
-            
-            except Exception as e:
-                print(e)
-                continue
-
-        txt_normalized.close()
-        control_f.close()
-
-
-    def timer(self, number):
-        for i in range(number, 0, -1):  
-            sys.stdout.write(str(i) + ' ')  
-            sys.stdout.flush()  
-            time.sleep(1)
-    
-
-    def download_image(self, url):
-        # pass thumbs of video 
-        if not 'avi_' in url:
-            self.filename = url[-13:]
-            self.r = requests.get(url, stream=True)
-
-            if self.r.status_code == 200:
-                self.path = DD.HOME_DIR + self.model_name + '/' + self.filename
-
-                with open(self.path,'wb') as f:
-                    shutil.copyfileobj(self.r.raw, f)
-                    time.sleep(1.5)
-                    shutil.copyfileobj(self.r.raw, f, 50000)
-
-    '''
-
 
 
 ps = PlanetS()
 # ps.write_all_pages_urls_of_model(initial_url)
-ps.get_all_fotos_url_of_model()
+# ps.get_all_fotos_url_of_model()
+ps.download_from_file()
