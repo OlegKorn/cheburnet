@@ -1,23 +1,16 @@
-#/usr/bin/env python3
+
+
 import requests, sys, os,time, shutil, time
 from bs4 import BeautifulSoup as bs
-import webbrowser as w
 
 
 
-headers = {'access-control-allow-origin' : '*',
-           'Request Method' : 'GET',
-           'Status Code' : '200',
-           'Remote Address' : '64.233.163.101:443',
-           'Referrer Policy' : 'no-referrer-when-downgrade',
-           'User-Agent' : 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36'
-}
 
-URL = 'https://www.elitebabes.com/model/amanda-b/'
+URL = 'https://www.elitebabes.com/model/nastya-k/'
 
 MODEL_NAME = URL.replace('https://www.elitebabes.com/model/', '').replace('/', '')
 
-home = 'G:/Desktop/py/elect/' + MODEL_NAME + '/'
+home = 'G:/Desktop/py/' + MODEL_NAME + '/'
 fi = home + MODEL_NAME + '.txt'
 fi1 = home + MODEL_NAME + '_links.txt'
 
@@ -32,7 +25,7 @@ def main():
 
     try: 
         session = requests.Session()
-        request = session.get(URL, headers=headers)
+        request = session.get(URL)
         soup = bs(request.content, 'html.parser')
 
             #download images from every section (0,1,2,...34)
@@ -61,11 +54,11 @@ def save_urls():
         img_url_replaced = img_url.replace('\n', '')
 
         session = requests.Session()
-        request = session.get(img_url_replaced, headers=headers)
+        request = session.get(img_url_replaced)
         soup = bs(request.content, 'html.parser')
             
         #image link
-        for image in soup.find('ul', class_='list-justified2').find_all('li'):
+        for image in soup.find('ul', class_='list-gallery a css').find_all('li'):
 
             try:
 
@@ -112,8 +105,6 @@ def save_img():
         
     f.close()
 
-# main()
-# save_urls()
+main()
+save_urls()
 save_img()
-
-
