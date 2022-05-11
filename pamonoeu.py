@@ -82,30 +82,34 @@ class P:
     def download_file(self, url, name):
         self.r = requests.get(url, stream=True)
         
-        self.path = f"G:/Desktop/{name}"
+        self.path = f"G:/Pictures/pamonoeu/{name}"
 
         with open(self.path,'wb') as f:
             shutil.copyfileobj(self.r.raw, f)
-            sleep(1.5)
+            sleep(1)
             shutil.copyfileobj(self.r.raw, f, 50000)
 
 
 
 
 p = P()
-urls = p.get_fotos_of_item("https://www.pamono.eu/karl-hagenauer-for-werkstatte-hagenauer-female-bust-1930s-brass")
-for url in urls:
-    _ = url.split(" : ")[0]
-    name = url.split(" : ")[1]
-    
-    p.download_file(_, name)
-
-'''
 last_page = p.get_last_page(url)
 
 for page in range(1, int(last_page)+1):
     url = f"https://www.pamono.eu/sculpture-figurative?p={str(page)}&style=2931%2C4250"
-    print(url)
-    # p.get_fotos_of_item()
-'''
-# p.get_fotos_of_item("https://www.pamono.eu/karl-hagenauer-for-werkstatte-hagenauer-female-bust-1930s-brass")
+    items = p.get_items_of_page(url)
+
+    for item in items:
+        print("-----------------------")
+        print(item)
+        print("-----------------------")
+    
+        items_urls = p.get_fotos_of_item(item)
+
+        for url in items_urls:
+            _ = url.split(" : ")[0]
+            name = url.split(" : ")[1]
+
+            print(_)
+            
+            p.download_file(_, name)
