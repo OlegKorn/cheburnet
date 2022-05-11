@@ -3,7 +3,15 @@ import requests
 import re
 from time import sleep
 import shutil
+import logging 
 
+
+FORMAT = '%(message)s'
+logging.basicConfig(
+    filename="G:/Pictures/pamonoeu/2.log",
+    level=logging.INFO, 
+    format=FORMAT
+)
 
 headers = {
     "user-agent": "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Safari/537.36"
@@ -91,7 +99,7 @@ class P:
 
 
 
-
+'''
 p = P()
 last_page = p.get_last_page(url)
 
@@ -101,7 +109,7 @@ for page in range(1, int(last_page)+1):
 
     for item in items:
         print("-----------------------")
-        print(item)
+        print(f"{item}, page={page}, item number={items.index(item)} of {len(items)}")
         print("-----------------------")
     
         items_urls = p.get_fotos_of_item(item)
@@ -111,5 +119,16 @@ for page in range(1, int(last_page)+1):
             name = url.split(" : ")[1]
 
             print(_)
-            
-            p.download_file(_, name)
+            # logging.info(_)
+
+            # p.download_file(_, name) https://cdn20.pamono.com/p/z/8/4/845586_cdutd1m8ch/joseph-emmanuel-cormier-woman-dressed-in-veils-20th-century-terracotta-1.jpg
+
+'''
+
+f = open("G:/Pictures/pamonoeu/2.log", "r")
+p = P()
+
+for i in f.readlines():
+    print(i.strip())
+    name = i.split("/")[-1].strip()
+    p.download_file(i.strip(), name)
