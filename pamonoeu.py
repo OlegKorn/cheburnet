@@ -102,9 +102,6 @@ p = P()
 last_page = p.get_last_page(url)
 
 for page in range(1, int(last_page)+1):
-    url = "https://www.pamono.eu/catalogsearch/result/" + \
-           f"index/?cat=1465&design_period_new=956%2C944%2C943&p={str(page)}&q=woman"
-
     items = p.get_items_of_page(url)
 
     for item in items[:-1]:
