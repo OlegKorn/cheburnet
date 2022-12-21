@@ -3,28 +3,29 @@ import requests
 import re
 from time import sleep
 import shutil
-import logging 
+import logging
+from multiprocessing import cpu_count
+from multiprocessing.pool import ThreadPool
 
+
+headers = {
+    "User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:106.0) Gecko/20100101 Firefox/106.0"
+}
+
+page = 1
+
+url = f"https://www.pamono.eu/work-on-paper-figurative?design_period_new=956%2C944&p={str(page)}"
+search = re.search(r".*?eu\/(.*)\?.*", url).group(1)
 
 FORMAT = '%(message)s'
 logging.basicConfig(
-    filename="G:/Pictures/pamonoeu/accessories/1.log",
-    level=logging.INFO, 
+    filename=f"/home/oleg/Public/py/{search}/{search}.log",
+    level=logging.INFO,
     format=FORMAT
 )
 
-headers = {
-    "user-agent": "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Safari/537.36"
-}
-page = 1
-
-url = "https://www.pamono.eu/home-accessories?design_period_new=943%2C944%2C956" + \
-    f"&p={str(page)}&style=2931%2C4250%2C4735%2C4251%2C4256%2C4739%2C4741%2C4" + \
-    "744%2C4703%2C886%2C4746%2C4253%2C4749%2C4751%2C4753%2C4755%2C4756%2C4257" + \
-    "%2C4764%2C4766%2C4767%2C4768%2C4776%2C4258%2C4260%2C4785%2C4651"
 
 class P:
-
     def get_soup(self, url):
         self.session = requests.Session()
         self.request = self.session.get(url, headers=headers)
@@ -61,12 +62,12 @@ class P:
 
     def get_item_name(self, url):
         self.s = self.get_soup(url)
-        
+
         item_name = self.s.find("h1", class_="product-name").text.strip().replace(" ", "_").replace(",", ".")
 
         return item_name
 
-    
+
     def get_fotos_of_item(self, url):
         items_urls = []
         number = 1
@@ -75,48 +76,42 @@ class P:
 
         self.s = self.get_soup(url) 
 
-        item_all_items = self.s.find_all("a", class_="link")
+        all_items = self.s.find_all("a", class_="link")
 
-        for i in item_all_items:
+        for i in all_items:
             if name_modified in i["href"]:
                 url_and_name = i["href"] + " : " + name_modified + "_" + str(number) + ".jpg"
                 items_urls.append(url_and_name)
 
                 number += 1
 
-        return items_urls    
+        return items_urls
 
 
-
-                   
     def download_file(self, url, name):
         self.r = requests.get(url, stream=True)
-        
-        self.path = f"G:/Pictures/pamonoeu/accessories/{name}"
+
+        self.path = f"/home/oleg/Public/py/{search}/{name}"
 
         with open(self.path,'wb') as f:
             shutil.copyfileobj(self.r.raw, f)
             sleep(1)
             shutil.copyfileobj(self.r.raw, f, 50000)
 
-
-
-
 p = P()
 last_page = p.get_last_page(url)
 
 for page in range(1, int(last_page)+1):
-    url = "https://www.pamono.eu/home-accessories?design_period_new=943%2C944%2C956" + \
-          f"&p={str(page)}&style=2931%2C4250%2C4735%2C4251%2C4256%2C4739%2C4741%2C4" + \
-          "744%2C4703%2C886%2C4746%2C4253%2C4749%2C4751%2C4753%2C4755%2C4756%2C4257" + \
-          "%2C4764%2C4766%2C4767%2C4768%2C4776%2C4258%2C4260%2C4785%2C4651"
+    url = "https://www.pamono.eu/catalogsearch/result/" + \
+           f"index/?cat=1465&design_period_new=956%2C944%2C943&p={str(page)}&q=woman"
+
     items = p.get_items_of_page(url)
 
     for item in items[:-1]:
-        print("-----------------------")
+        print("\n-----------------------")
         print(f"{item}, page={page} of {last_page}, item number={items.index(item)} of {len(items)}")
-        print("-----------------------\n")
-    
+        print("-----------------------")
+
         items_urls = p.get_fotos_of_item(item)
 
         for url in items_urls:
@@ -126,14 +121,12 @@ for page in range(1, int(last_page)+1):
             print(_)
             logging.info(_)
 
-            # p.download_file(_, name) https://cdn20.pamono.com/p/z/8/4/845586_cdutd1m8ch/joseph-emmanuel-cormier-woman-dressed-in-veils-20th-century-terracotta-1.jpg
 
 '''
-f = open("G:/Pictures/pamonoeu/watercolor/1.log", "r")
-p = P()
-
+f = open(f"/home/oleg/Public/py/{search}/{search}.log", "r")
 for i in f.readlines():
-    print(i.strip())
-    name = i.split("/")[-1].strip()
-    p.download_file(i.strip(), name)
+    _ = i.strip()
+    name = _.split("/")[-1]
+    print(_)
+    p.download_file(_, name)
 '''
