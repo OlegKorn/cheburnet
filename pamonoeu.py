@@ -114,23 +114,23 @@ class Pamono:
 
 
     def download_file(self):
-        self.r = requests.get(url, stream=True)
-        self.path = path + log_name + ".log"
+        self.log = path + log_name + ".log"
+        self.path = path
+        f = open(self.log, "r")
 
-        f = open(self.path, "r")
-        for i in f.readlines():
-            print(i.strip())
-        '''
-        with open(self.path,'wb') as f:
-            shutil.copyfileobj(self.r.raw, f)
-            sleep(1)
-            shutil.copyfileobj(self.r.raw, f, 50000)
-        '''
-
+        for link in f.readlines():
+            title = link.split('/')[8].strip() 
+            
+            self.session = requests.Session()
+            self.r = requests.get(link.strip(), stream=True)
+            self.image = self.r.raw.read()
+            print(title)
+            open(self.path + title, "wb").write(self.image)
 
 p = Pamono()
-# p.download_file()
+p.download_file()
 
+'''
 last_page = p.get_last_page(url)
 
 for page in range(1, int(last_page)+1):
@@ -143,3 +143,9 @@ for page in range(1, int(last_page)+1):
         print(f"{item}, page={page} of {last_page}, item number={items.index(item)} of {len(items)}")
 
         p.write_links_of_fotos_of_an_item(item)
+'''
+
+
+
+
+
