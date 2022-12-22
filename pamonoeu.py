@@ -1,7 +1,6 @@
 from bs4 import BeautifulSoup as bs
 import requests
 import re, os
-import shutil
 import logging
 from time import sleep
 
