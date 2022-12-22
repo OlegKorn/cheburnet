@@ -1,11 +1,9 @@
 from bs4 import BeautifulSoup as bs
 import requests
-import re
-from time import sleep
+import re, os
 import shutil
 import logging
-from multiprocessing import cpu_count
-from multiprocessing.pool import ThreadPool
+from time import sleep
 
 
 headers = {
@@ -14,18 +12,43 @@ headers = {
 
 page = 1
 
-url = f"https://www.pamono.eu/work-on-paper-figurative?design_period_new=956%2C944&p={str(page)}"
-search = re.search(r".*?eu\/(.*)\?.*", url).group(1)
+url = f"https://www.pamono.eu/work-on-paper-figurative?design_period_new=956%2C944%2C943?p={str(page)}"
 
-FORMAT = '%(message)s'
-logging.basicConfig(
-    filename=f"/home/oleg/Public/py/{search}/{search}.log",
-    level=logging.INFO,
-    format=FORMAT
-)
+try: 
+    search_wo_query = re.search(r'eu/(.*?)\?design', url).group(1)
+    print(search_wo_query)
+
+    if search_wo_query:
+        path = f"/home/oleg/Public/py/{search_wo_query}/"
+        log_name = search_wo_query
+        
+        if os.path.exists(f"/home/oleg/Public/py/{search_wo_query}"):
+            print(f"/home/oleg/Public/py/{search_wo_query} exists")
+            pass
+
+        if not os.path.exists(f"/home/oleg/Public/py/{search_wo_query}"):
+            os.makedirs(f"/home/oleg/Public/py/{search_wo_query}", mode=0o777)
+
+    if not search_wo_query:
+        search = re.search("&q=(.*)", url).group(1)
+        if search:
+            path = f"/home/oleg/Public/py/{search}/"
+            log_name = search
+            
+            if os.path.exists(f"/home/oleg/Public/py/{search_wo_query}"):
+                print(f"/home/oleg/Public/py/{search_wo_query} exists")
+                pass
+                
+            if not os.path.exists(f"/home/oleg/Public/py/{search}"):
+                os.makedirs(f"/home/oleg/Public/py/{search}", mode=0o777)
+                    
+
+except Exception as e:
+    print(e)
 
 
-class P:
+
+class Pamono:
     def get_soup(self, url):
         self.session = requests.Session()
         self.request = self.session.get(url, headers=headers)
@@ -41,8 +64,10 @@ class P:
             self.last_page = self.s.find('div', class_='pager'). \
                                     find('div', class_='label').text. \
                                     strip().split("of ")[1]
+
         except Exception as e:
             return True
+
         return self.last_page
 
 
@@ -62,68 +87,59 @@ class P:
 
     def get_item_name(self, url):
         self.s = self.get_soup(url)
-
         item_name = self.s.find("h1", class_="product-name").text.strip().replace(" ", "_").replace(",", ".")
-
         return item_name
 
 
-    def get_fotos_of_item(self, url):
-        items_urls = []
-        number = 1
-        name = self.get_item_name(url)
-        name_modified = name.lower().replace(".", "").replace("_", "-")
+    def write_links_of_fotos_of_an_item(self, url):
+        FORMAT = '%(message)s'
+        logging.basicConfig(
+            filename=path + log_name + ".log",
+            level=logging.INFO,
+            format=FORMAT
+        )
 
         self.s = self.get_soup(url) 
+        sleep(0.25)
 
-        all_items = self.s.find_all("a", class_="link")
-
+        all_items = self.s.find("div", class_="main-content").find_all("a", class_="link")
         for i in all_items:
-            if name_modified in i["href"]:
-                url_and_name = i["href"] + " : " + name_modified + "_" + str(number) + ".jpg"
-                items_urls.append(url_and_name)
+            href = i["href"]
+            print(href)
 
-                number += 1
+            if len(all_items) == all_items.index(i) + 1:
+                print("-----------------------")
 
-        return items_urls
+            logging.info(href)
 
 
-    def download_file(self, url, name):
+    def download_file(self):
         self.r = requests.get(url, stream=True)
+        self.path = path + log_name + ".log"
 
-        self.path = f"/home/oleg/Public/py/{search}/{name}"
-
+        f = open(self.path, "r")
+        for i in f.readlines():
+            print(i.strip())
+        '''
         with open(self.path,'wb') as f:
             shutil.copyfileobj(self.r.raw, f)
             sleep(1)
             shutil.copyfileobj(self.r.raw, f, 50000)
+        '''
 
-p = P()
+
+p = Pamono()
+# p.download_file()
+
 last_page = p.get_last_page(url)
 
 for page in range(1, int(last_page)+1):
+    url = f"https://www.pamono.eu/work-on-paper-figurative?design_period_new=956%2C944%2C943?p={str(page)}"
+
     items = p.get_items_of_page(url)
 
     for item in items[:-1]:
         print("\n-----------------------")
         print(f"{item}, page={page} of {last_page}, item number={items.index(item)} of {len(items)}")
-        print("-----------------------")
 
-        items_urls = p.get_fotos_of_item(item)
-
-        for url in items_urls:
-            _ = url.split(" : ")[0]
-            name = url.split(" : ")[1]
-
-            print(_)
-            logging.info(_)
-
-
-'''
-f = open(f"/home/oleg/Public/py/{search}/{search}.log", "r")
-for i in f.readlines():
-    _ = i.strip()
-    name = _.split("/")[-1]
-    print(_)
-    p.download_file(_, name)
-'''
+        p.write_links_of_fotos_of_an_item(item)
