@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup as bs
 import requests
 import re, os
+import shutil
 import logging
 from time import sleep
 
@@ -10,50 +11,58 @@ headers = {
 }
 
 page = 1
-
-url = f"https://www.pamono.eu/work-on-paper-figurative?design_period_new=956%2C944%2C943?p={str(page)}"
-
-try: 
-    search_wo_query = re.search(r'eu/(.*?)\?design', url).group(1)
-    print(search_wo_query)
-
-    if search_wo_query:
-        path = f"/home/oleg/Public/py/{search_wo_query}/"
-        log_name = search_wo_query
-        
-        if os.path.exists(f"/home/oleg/Public/py/{search_wo_query}"):
-            print(f"/home/oleg/Public/py/{search_wo_query} exists")
-            pass
-
-        if not os.path.exists(f"/home/oleg/Public/py/{search_wo_query}"):
-            os.makedirs(f"/home/oleg/Public/py/{search_wo_query}", mode=0o777)
-
-    if not search_wo_query:
-        search = re.search("&q=(.*)", url).group(1)
-        if search:
-            path = f"/home/oleg/Public/py/{search}/"
-            log_name = search
-            
-            if os.path.exists(f"/home/oleg/Public/py/{search_wo_query}"):
-                print(f"/home/oleg/Public/py/{search_wo_query} exists")
-                pass
-                
-            if not os.path.exists(f"/home/oleg/Public/py/{search}"):
-                os.makedirs(f"/home/oleg/Public/py/{search}", mode=0o777)
-                    
-
-except Exception as e:
-    print(e)
-
+url = f"https://www.pamono.eu/work-on-paper-figurative?design_period_new=941"
 
 
 class Pamono:
+    def __init__(self):
+        try:
+            filtr = self.get_filter()
+
+            search_wo_query = re.search(r'eu/(.*?)\?design', url).group(1)
+            if search_wo_query:
+                self.path = f"/home/oleg/Public/py/{search_wo_query}_{filtr}/"
+                print(self.path)
+                self.log_name = f"{search_wo_query}_{filtr}"
+                
+                if os.path.exists(self.path):
+                    print(self.path, " exists")
+                    pass
+
+                if not os.path.exists(self.path):
+                    os.makedirs(self.path, mode=0o777)
+
+            if not search_wo_query:
+                search = re.search("&q=(.*)", url).group(1)
+                if search:
+                    self.path = f"/home/oleg/Public/py/{search}_{filtr}/"
+                    print(self.path)
+                    self.log_name = f"{search}_{filtr}"
+                    
+                    if os.path.exists(self.path):
+                        print(self.path, " exists")
+                        pass
+                        
+                    if not os.path.exists(self.path):
+                        os.makedirs(self.path, mode=0o777)
+                            
+        except Exception as e:
+            print(e)
+
+
     def get_soup(self, url):
         self.session = requests.Session()
         self.request = self.session.get(url, headers=headers)
         self.soup = bs(self.request.content, 'html.parser')
 
         return self.soup
+
+
+    def get_filter(self, url=url): 
+        self.s = self.get_soup(url)
+        filtr = self.s.find("div", class_="filter-state").find("span", class_="value").text.strip()
+        
+        return filtr
 
 
     def get_last_page(self, url):
@@ -65,7 +74,7 @@ class Pamono:
                                     strip().split("of ")[1]
 
         except Exception as e:
-            return True
+            return False
 
         return self.last_page
 
@@ -93,7 +102,7 @@ class Pamono:
     def write_links_of_fotos_of_an_item(self, url):
         FORMAT = '%(message)s'
         logging.basicConfig(
-            filename=path + log_name + ".log",
+            filename=self.path + self.log_name + ".log",
             level=logging.INFO,
             format=FORMAT
         )
@@ -113,6 +122,9 @@ class Pamono:
 
 
     def download_file(self):
+        print("DOWNLOADING BEGAN...")
+        print()
+
         self.log = path + log_name + ".log"
         self.path = path
         f = open(self.log, "r")
@@ -126,10 +138,9 @@ class Pamono:
             print(title)
             open(self.path + title, "wb").write(self.image)
 
-p = Pamono()
-p.download_file()
 
-'''
+
+p = Pamono()
 last_page = p.get_last_page(url)
 
 for page in range(1, int(last_page)+1):
@@ -140,11 +151,8 @@ for page in range(1, int(last_page)+1):
     for item in items[:-1]:
         print("\n-----------------------")
         print(f"{item}, page={page} of {last_page}, item number={items.index(item)} of {len(items)}")
-
         p.write_links_of_fotos_of_an_item(item)
-'''
 
-
-
+p.download_file()
 
 
