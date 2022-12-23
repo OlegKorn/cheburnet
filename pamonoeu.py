@@ -28,13 +28,12 @@ def get_filter():
         filters_merged = filters_merged + f + ","
 
     filters_merged = filters_merged[:-1]
-    print("huj = ", filters_merged)
     return filters_merged 
 
 
 def create_dir(path):
     if os.path.exists(path):
-        print(path, " exists")
+        print("exists")
         
     if not os.path.exists(path):
         os.makedirs(path, mode=0o777)
@@ -42,13 +41,13 @@ def create_dir(path):
 
 try:
     f = get_filter()
-    print(f)
+    # print(f)
     
     if "\?design" in url:
         search_wo_query = re.search(r'eu/(.*?)\?design', url).group(1)
         if search_wo_query:
             path = f"/home/oleg/Public/py/{search_wo_query}_{f}/"
-            print(path)
+            # print(path)
             log_name = f"{search_wo_query}_{f}"
             create_dir(path)        
             
@@ -56,7 +55,7 @@ try:
         search = re.search("&q=(.*)", url).group(1)
         if search:
             path = f"/home/oleg/Public/py/{search}_{f}/"
-            print(path)
+            # print(path)
             log_name = f"{search}_{f}"
             create_dir(path)
  
@@ -65,7 +64,6 @@ try:
         log_name = f"{path}/log.log"
         print(path, log_name)
         create_dir(path)
-
                   
 except Exception as e:
     print(e)
@@ -138,7 +136,7 @@ class Pamono:
 
     def download_file(self):
         print("DOWNLOADING BEGAN...")
-        print(log_name)
+        #print(log_name)
 
         f = open(log_name, "r")
 
@@ -148,8 +146,11 @@ class Pamono:
             self.session = requests.Session()
             self.r = requests.get(link.strip(), stream=True)
             self.image = self.r.raw.read()
+
             print(title)
-            open(path + title, "wb").write(self.image)
+
+            open(path + "/" + title, "wb").write(self.image)
+        
 
 
 p = Pamono()
