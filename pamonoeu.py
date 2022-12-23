@@ -35,6 +35,7 @@ def get_filter():
 def create_dir(path):
     if os.path.exists(path):
         print(path, " exists")
+        
     if not os.path.exists(path):
         os.makedirs(path, mode=0o777)
 
@@ -137,9 +138,9 @@ class Pamono:
 
     def download_file(self):
         print("DOWNLOADING BEGAN...")
-        print(log)
+        print(log_name)
 
-        f = open(log, "r")
+        f = open(log_name, "r")
 
         for link in f.readlines():
             title = link.split('/')[8].strip() 
@@ -152,9 +153,9 @@ class Pamono:
 
 
 p = Pamono()
-last_page = p.get_last_page(url)
+# last_page = p.get_last_page(url)
 
-
+'''
 for page in range(1, int(last_page)+1):
     url = "https://www.pamono.eu/catalogsearch/result/index/?cat=1465&" + \
           f"design_period_new=943%2C944%2C956&p={str(page)}&q=painting&style=2921%2C2931%2C4250"
@@ -166,7 +167,7 @@ for page in range(1, int(last_page)+1):
         print("\n-----------------------")
         print(f"{item}, page={page} of {last_page}, item number={items.index(item)} of {len(items)}")
         p.write_links_of_fotos_of_an_item(item)
-
+'''
 
 p.download_file()
 
