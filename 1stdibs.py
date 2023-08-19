@@ -6,17 +6,18 @@ import logging
 from time import sleep
 import wget
 from string import punctuation
+from unidecode import unidecode
 
 
 headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:109.0) Gecko/20100101 Firefox/115.0"
 }
-category = "_art"
+category = "_furniture_decorative-objects"
 
 base_url = "https://www.1stdibs.com"
 BASE_PATH = "G:/Desktop/py/1stdibs/"
 
-url = "https://www.1stdibs.com/art/?per=1910s,1920s,1930s,early-1900s"
+url = "https://www.1stdibs.com/furniture/decorative-objects/?per=1910s,1920s,early-1900s"
 
 
 def get_filters():
@@ -66,9 +67,9 @@ class Pizda:
  
         for i in range(page, self.get_last_page()+1):
             if page == 1:
-                url = "https://www.1stdibs.com/art/?per=1910s,1920s,1930s,early-1900s"
+                url = "https://www.1stdibs.com/furniture/decorative-objects/?per=1910s,1920s,early-1900s"
             else:
-                url = f"https://www.1stdibs.com/art/?page={str(page)}&per=1910s,1920s,1930s,early-1900s"
+                url = f"https://www.1stdibs.com/furniture/decorative-objects/?page={str(page)}&per=1910s,1920s,early-1900s"
            
             print()
             print(page, "=========", sep=" ")
@@ -115,7 +116,8 @@ class Pizda:
                 author_and_title = soup.find("h1", attrs={"data-tn": "pdp-resp-title"}).text
 
                 # deleting forbidden chars
-                author_and_title = re.sub('['+forbidden_chars+']', '', author_and_title)            
+                author_and_title = re.sub('['+forbidden_chars+']', '', author_and_title)
+                unidecode(author_and_title)          
             except:
                 author_and_title = "Unknown Author"
              
@@ -168,5 +170,5 @@ create_dir()
 
 p = Pizda()
 # p.write_all_anchors_of_found_items()
-# p.write_author_title_and_url_of_one_photo()
-p.download_file()
+p.write_author_title_and_url_of_one_photo()
+# p.download_file()
