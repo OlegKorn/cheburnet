@@ -1,4 +1,4 @@
-rom bs4 import BeautifulSoup as bs
+from bs4 import BeautifulSoup as bs
 import requests
 import re, os
 import shutil
@@ -9,11 +9,12 @@ from string import punctuation
 
 
 headers = {
-    "User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:106.0) Gecko/20100101 Firefox/106.0"
+    "User-Agent": "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:109.0) Gecko/20100101 Firefox/115.0"
 }
 category = "_art"
 
 base_url = "https://www.1stdibs.com"
+BASE_PATH = "G:/Desktop/py/1stdibs/"
 
 url = "https://www.1stdibs.com/art/?per=1910s,1920s,1930s,early-1900s"
 
@@ -24,7 +25,7 @@ def get_filters():
 
 
 def create_dir(filters=get_filters()):
-    p = "/home/oleg/Public/py/1stdibs/" + filters
+    p = BASE_PATH + filters
     if os.path.exists(p):
         print(p, "exists")
        
@@ -56,9 +57,18 @@ class Pizda:
     def write_all_anchors_of_found_items(self):
         page = 1
 
+        handler = logging.FileHandler(
+            'output.log', 
+            'w',
+            encoding = 'utf-8'
+        )
+
+        root_logger = logging.getLogger()
+        root_logger.addHandler(handler)
+
         FORMAT = '%(message)s'
         logging.basicConfig(
-            filename= "/home/oleg/Public/py/1stdibs/" + get_filters() + "/" + get_filters() + "_all_items_anchors.log",
+            filename= BASE_PATH + get_filters() + "/" + get_filters() + "_all_items_anchors.log",
             level=logging.INFO,
             format=FORMAT
         )
@@ -93,17 +103,31 @@ class Pizda:
 
 
     def write_author_title_and_url_of_one_photo(self):
+
+        handler = logging.FileHandler(
+            'output.log', 
+            'w',
+            encoding = 'utf-8'
+        )
+        
+        root_logger = logging.getLogger()
+        root_logger.addHandler(handler)
+        
         FORMAT = '%(message)s'
         logging.basicConfig(
-            filename= "/home/oleg/Public/py/1stdibs/" + get_filters() + "/" + get_filters() + "_authors_titles_and_urls_of_photos.log",
+            filename= BASE_PATH + get_filters() + "/" + get_filters() + "_authors_titles_and_urls_of_photos.log",
             level=logging.INFO,
             format=FORMAT
         )
 
-        all_items_anchors = open("/home/oleg/Public/py/1stdibs/" + get_filters() + "/" + get_filters() + "_all_items_anchors.log", "r")
+        all_items_anchors = open(BASE_PATH + get_filters() + "/" + get_filters() + "_all_items_anchors.log", "r")
        
         for line in all_items_anchors.readlines():
-            soup = self.get_soup(line.strip())
+            try:
+                soup = self.get_soup(line.strip())
+            except Exception as e:
+                print("!!!!!!!!!!!!!!!!!!!!!!!!! " + e)
+                continue
 
             src = soup.find("button", attrs={"data-tn": "pdp-image-carousel-image-1"}).find("img")["src"].replace("?width=768", "")
            
@@ -138,7 +162,7 @@ class Pizda:
         try:
             print("DOWNLOADING BEGAN...")
 
-            f = open("/home/oleg/Public/py/1stdibs/" + get_filters() + "/" + get_filters() + "_authors_titles_and_urls_of_photos.log", "r")
+            f = open(BASE_PATH + get_filters() + "/" + get_filters() + "_authors_titles_and_urls_of_photos.log", "r")
 
             for link in f.readlines():
                 url = link.split('++')[2].strip()
@@ -148,7 +172,7 @@ class Pizda:
                 print(author_and_title, url, sep=" - ")
                 print("++++++++++++")
 
-                p = "/home/oleg/Public/py/1stdibs/" + get_filters()
+                p = BASE_PATH + get_filters()
                
                 self.session = requests.Session()
                 self.r = requests.get(url, stream=True)
@@ -163,5 +187,5 @@ create_dir()
 
 p = Pizda()
 # p.write_all_anchors_of_found_items()
-# p.write_author_title_and_url_of_one_photo()
-p.download_file()
+p.write_author_title_and_url_of_one_photo()
+# p.download_file()
