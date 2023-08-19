@@ -57,15 +57,6 @@ class Pizda:
     def write_all_anchors_of_found_items(self):
         page = 1
 
-        handler = logging.FileHandler(
-            'output.log', 
-            'w',
-            encoding = 'utf-8'
-        )
-
-        root_logger = logging.getLogger()
-        root_logger.addHandler(handler)
-
         FORMAT = '%(message)s'
         logging.basicConfig(
             filename= BASE_PATH + get_filters() + "/" + get_filters() + "_all_items_anchors.log",
@@ -104,15 +95,6 @@ class Pizda:
 
     def write_author_title_and_url_of_one_photo(self):
 
-        handler = logging.FileHandler(
-            'output.log', 
-            'w',
-            encoding = 'utf-8'
-        )
-        
-        root_logger = logging.getLogger()
-        root_logger.addHandler(handler)
-        
         FORMAT = '%(message)s'
         logging.basicConfig(
             filename= BASE_PATH + get_filters() + "/" + get_filters() + "_authors_titles_and_urls_of_photos.log",
@@ -123,14 +105,9 @@ class Pizda:
         all_items_anchors = open(BASE_PATH + get_filters() + "/" + get_filters() + "_all_items_anchors.log", "r")
        
         for line in all_items_anchors.readlines():
-            try:
-                soup = self.get_soup(line.strip())
-            except Exception as e:
-                print("!!!!!!!!!!!!!!!!!!!!!!!!! " + e)
-                continue
-
+            soup = self.get_soup(line.strip())                
             src = soup.find("button", attrs={"data-tn": "pdp-image-carousel-image-1"}).find("img")["src"].replace("?width=768", "")
-           
+     
             # deleting forbidden chars
             forbidden_chars = re.escape(punctuation)
            
@@ -155,7 +132,11 @@ class Pizda:
             print(author_and_title)
             print()
 
-            logging.info(data)
+            try:
+                logging.info(data)
+            except Exception as e:
+                print(e)
+                continue
 
 
     def download_file(self):
@@ -177,7 +158,7 @@ class Pizda:
                 self.session = requests.Session()
                 self.r = requests.get(url, stream=True)
                 self.image = self.r.raw.read()
-                open(p + "/" + author_and_title, "wb").write(self.image)
+                open(p + "/" + author_and_title + ".jpg", "wb").write(self.image)
        
         except ValueError as e:
             print(e)
@@ -187,5 +168,5 @@ create_dir()
 
 p = Pizda()
 # p.write_all_anchors_of_found_items()
-p.write_author_title_and_url_of_one_photo()
-# p.download_file()
+# p.write_author_title_and_url_of_one_photo()
+p.download_file()
