@@ -117,7 +117,7 @@ class Pizda:
 
                 # deleting forbidden chars
                 author_and_title = re.sub('['+forbidden_chars+']', '', author_and_title)
-                unidecode(author_and_title)          
+                author_and_title = unidecode(author_and_title)       
             except:
                 author_and_title = "Unknown Author"
              
