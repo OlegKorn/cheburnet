@@ -14,7 +14,7 @@ headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:109.0) Gecko/20100101 Firefox/115.0"
 }
 
-model = "Brin Amberlee (Brin Dillon)"
+model = "Ульяна Ашурко"
 
 BASE_PATH = "G:/Desktop/py/female_model/"
 
@@ -32,12 +32,11 @@ logging.basicConfig(
     level=logging.INFO,
     format=FORMAT
 )
-
-# your app token
-access_token = "oyXX......."
+         
+access_token = "vk1.a.QSAIP_YL05_K3BEyuBJqeW-QLp8YIY7nTZzlOdlTWyeAdnimBHmNCBnKzJCLFwZnXQFTYPGBXXaeEJNfnZfhkljuElP_1XiekmW9gI2BpJ9dOeY6mdxuRUSMpyENcOaK89_cCjnmoyXXySIzPs2YsD2b5gD2BEyVLmZhRdzahg9odUEOHDpmBzkt6F6zsrPw"
 
 def request_fotos():
-    r = requests.post(f"https://api.vk.com/method/photos.get?owner_id=-107647545&album_id=243178784&count=500&access_token={access_token}&v=5.150")
+    r = requests.post(f"https://api.vk.com/method/photos.get?owner_id=-107647545&album_id=231376753&count=500&access_token={access_token}&v=5.150")
 
     last_urls = re.findall('"type":"z"(.*?)type=album', r.text)
     print(len(last_urls))
@@ -56,6 +55,8 @@ def id_generator(size=8, chars=string.ascii_lowercase + string.digits):
 
 
 def download():
+    index = 1
+
     print("DOWNLOADING BEGAN...")
     f = open(BASE_PATH + model + "/" + model + ".log", "r")
     for link in f.readlines():
@@ -65,8 +66,10 @@ def download():
         session = requests.Session()
         r = requests.get(link, stream=True)
         image = r.raw.read()
-        print(p + title)
+        print(p + title, " -- foto #: ", index)
+        index += 1
         open(p + "/" + title + ".jpg", "wb").write(image)
 
 
+request_fotos()
 download()
