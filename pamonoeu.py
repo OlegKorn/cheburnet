@@ -3,16 +3,17 @@ import requests
 import re, os
 import shutil
 import logging
-from time import sleep
+import string
+import random
 
 
 headers = {
-    "User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:106.0) Gecko/20100101 Firefox/106.0"
+    "User-Agent": "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:109.0) Gecko/20100101 Firefox/115.0"
 }
 
 page = 1
-url = "https://www.pamono.eu/catalogsearch/result/index/?cat=1465&" + \
-      f"design_period_new=943%2C944%2C956&p={str(page)}&q=painting&style=2921%2C2931%2C4250"
+url = f"https://www.pamono.eu/furniture?design_period_new=956%2C944&p={str(page)}" + \
+      "&style=892%2C4250%2C4251%2C4253%2C4741%2C4744%2C4746%2C4755"
 
 
 def get_filter(): 
@@ -37,7 +38,7 @@ def create_dir(path):
         
     if not os.path.exists(path):
         os.makedirs(path, mode=0o777)
-
+        print(path, " created")
 
 try:
     f = get_filter()
@@ -46,7 +47,7 @@ try:
     if "\?design" in url:
         search_wo_query = re.search(r'eu/(.*?)\?design', url).group(1)
         if search_wo_query:
-            path = f"/home/oleg/Public/py/{search_wo_query}_{f}/"
+            path = f"G:/Desktop/py/pamonoeu/{search_wo_query}_{f}/"
             # print(path)
             log_name = f"{search_wo_query}_{f}"
             create_dir(path)        
@@ -54,19 +55,23 @@ try:
     if "&q=" in url and not f:
         search = re.search("&q=(.*)", url).group(1)
         if search:
-            path = f"/home/oleg/Public/py/{search}_{f}/"
+            path =  f"G:/Desktop/py/pamonoeu/{search}_{f}/"
             # print(path)
             log_name = f"{search}_{f}"
             create_dir(path)
  
     if "design_period_new" or "style" in url:
-        path = f"/home/oleg/Public/py/{f}"
+        path = f"G:/Desktop/py/pamonoeu/{f}"
         log_name = f"{path}/log.log"
-        print(path, log_name)
+        print(path, log_name, sep="\n")
         create_dir(path)
                   
 except Exception as e:
     print(e)
+
+
+def id_generator(size=8, chars=string.ascii_lowercase + string.digits):
+    return ''.join(random.choice(chars) for _ in range(size))
 
 
 class Pamono:
@@ -121,7 +126,6 @@ class Pamono:
         )
 
         self.s = self.get_soup(url) 
-        sleep(0.25)
 
         all_items = self.s.find("div", class_="main-content").find_all("a", class_="link")
         for i in all_items:
@@ -134,42 +138,59 @@ class Pamono:
             logging.info(href)
 
 
+    def write_first_link_of_fotos_of_an_item(self, url, page, item_index):
+        FORMAT = '%(message)s'
+        logging.basicConfig(
+            filename=log_name, #path + log_name + ".log",
+            level=logging.INFO,
+            format=FORMAT
+        )
+
+        self.s = self.get_soup(url) 
+
+        try:
+            first_item = self.s.find("div", class_="main-content").find_all("a", class_="link")[0]["href"]
+            logging.info(first_item + ":" + str(page) + ":" + str(item_index))
+        except:
+            pass
+
+
     def download_file(self):
         print("DOWNLOADING BEGAN...")
         #print(log_name)
 
         f = open(log_name, "r")
 
-        for link in f.readlines():
-            title = link.split('/')[8].strip() 
+        for link in f.readlines(): 
+            if ".jpg" in link:
+                link = link.split("jpg:")[0].strip() + "jpg"
+                print(link)
+            elif ".png" in link:
+                link = link.split("png:")[0].strip() + "png"
+                print(link)
             
+            title = id_generator() + "_" + link.split('/')[8].strip() 
             self.session = requests.Session()
-            self.r = requests.get(link.strip(), stream=True)
+            self.r = requests.get(link, stream=True)
             self.image = self.r.raw.read()
 
-            print(title)
-
-            open(path + "/" + title, "wb").write(self.image)
-        
+            open(path + "/" + title, "wb").write(self.image)            
 
 
 p = Pamono()
-# last_page = p.get_last_page(url)
 
-'''
-for page in range(1, int(last_page)+1):
-    url = "https://www.pamono.eu/catalogsearch/result/index/?cat=1465&" + \
-          f"design_period_new=943%2C944%2C956&p={str(page)}&q=painting&style=2921%2C2931%2C4250"
+last_page = int(p.get_last_page(url))
+
+for page in range(1, last_page+1):
+    url = f"https://www.pamono.eu/furniture?design_period_new=956%2C944&p={str(page)}" + \
+          "&style=892%2C4250%2C4251%2C4253%2C4741%2C4744%2C4746%2C4755"
     print(url)
-
     items = p.get_items_of_page(url)
 
     for item in items[:-1]:
-        print("\n-----------------------")
-        print(f"{item}, page={page} of {last_page}, item number={items.index(item)} of {len(items)}")
-        p.write_links_of_fotos_of_an_item(item)
-'''
+        print(f"{item}, page {page}/{last_page}, item {items.index(item)}/{len(items)}")
+        p.write_first_link_of_fotos_of_an_item(item, page, items.index(item))
 
-p.download_file()
+# p.download_file()
 
 
