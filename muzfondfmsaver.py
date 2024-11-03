@@ -1,9 +1,13 @@
 from bs4 import BeautifulSoup as bs
 import requests
 import re, os, sys
+from time import sleep
 import shutil
 from fake_headers import Headers
+
 from mutagen.mp3 import MP3
+from mutagen.mp4 import MP4
+
 from string import punctuation
 from unidecode import unidecode
 
@@ -13,7 +17,7 @@ DIR = "G:/Desktop/MP3"
 
 # это URL, с найденным автором и его песнями, ее придется менять вручную для каждого поиска
 # вот так она выглядит в браузере: https://muzofond.fm/search/alison krauss cox family
-url = "https://muzofond.fm/collections/artists/mary%20chapin%20carpenter"
+url = "https://muzofond.fm/search/alison%20krauss%20union%20station"
 
 
 class Saver:
@@ -104,6 +108,7 @@ class Saver:
                 stream=True
             )
             
+            sleep(1)
             mp3 = self.r.raw.read()
             open(f"{DIR}/{author_name_as_it_was_searched}/{mp3_title}.mp3", "wb").write(mp3)  
             self.clear_mp3_metadata(f"{DIR}/{author_name_as_it_was_searched}/{mp3_title}.mp3") 
@@ -112,16 +117,14 @@ class Saver:
 
 
     def clear_mp3_metadata(self, mp3_path):
-        mp3 = MP3(mp3_path) 
-   
         try:
+            mp3 = MP3(mp3_path)
             mp3.delete()
             mp3.save()
 
         except Exception as e:
-            print ('no ID3 tags')
-            print ('Completed')
             print("clear_mp3_metadata --->", e)
+            sys.exit()
 
 
 s = Saver()
