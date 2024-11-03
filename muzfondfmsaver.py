@@ -4,6 +4,8 @@ import re, os, sys
 import shutil
 from fake_headers import Headers
 from mutagen.mp3 import MP3
+from string import punctuation
+from unidecode import unidecode
 
 
 # это корневая директория, ее можно создать или указать существующую
@@ -11,7 +13,7 @@ DIR = "G:/Desktop/MP3"
 
 # это URL, с найденным автором и его песнями, ее придется менять вручную для каждого поиска
 # вот так она выглядит в браузере: https://muzofond.fm/search/alison krauss cox family
-url = "https://muzofond.fm/collections/artists/holly%20dunn"
+url = "https://muzofond.fm/collections/artists/mary%20chapin%20carpenter"
 
 
 class Saver:
@@ -89,7 +91,12 @@ class Saver:
         
         for author_mp3 in author_mp3s:
             mp3_link = author_mp3.split(":::")[0]
+
             mp3_title = author_mp3.split(":::")[1]
+            # deleting forbidden chars
+            FORBIDDEN_CHARS = re.escape(punctuation)
+            mp3_title = re.sub('['+FORBIDDEN_CHARS+']', '', mp3_title).replace('"', "")
+            mp3_title = unidecode(mp3_title) 
 
             self.r = requests.get(
                 mp3_link,
@@ -110,6 +117,7 @@ class Saver:
         try:
             mp3.delete()
             mp3.save()
+
         except Exception as e:
             print ('no ID3 tags')
             print ('Completed')
@@ -117,5 +125,4 @@ class Saver:
 
 
 s = Saver()
-print(s.get_mp3s_of_author_page())
 s.download_file()
