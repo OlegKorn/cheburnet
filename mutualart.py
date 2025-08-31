@@ -1,12 +1,3 @@
-#  cd /home/oleg/Изображения/mutualart && avenv
-'''
-imgs = document.querySelector(".artwork-poc-container").querySelectorAll(".grid-item-container")
-
-for (i = 0; i < imgs.length; i++) {
-    link = "https://www.mutualart.com" + imgs[i].firstChild.dataset.link 
-	console.log(link)
-'''
-
 from bs4 import BeautifulSoup as bs
 import requests
 import re, os, sys
@@ -20,7 +11,8 @@ import time
 
 BASE_DIR = '/home/oleg/Изображения/mutualart/'
 MIN_SIZE = 300000
-artist = 'charles schwab'
+artist = 'franz von bayros'
+
 
 def download_file(url, post_url, filename):
     resp = requests.get(url, stream=True)
@@ -39,9 +31,33 @@ def get_soup(url):
     session = requests.Session()
         
     try:
+        cookie_url = url.replace("https://www.mutualart.com", '')
+
+        cookies = {
+            "__stripe_mid": "0f339cc9-8321-4b4e-9b4d-f3d84e1165f93853da",
+            "__stripe_sid": "f47af7ab-6c55-4088-8abd-fd11560a78ba5e5887",
+            "_uetsid": "220ff4a0856011f0901ab73b3c8a477d",
+            "_uetvid": "84433ab0815f11f0a4e893cbda3182cd",
+            ".ASPXFORMSAUTH": "6C0E4F1D979DDBD54DA9F4E966C88D9ABA7C439C34F333FF6950F0D18068AC3E40FDB5706B58003722EFCB147AFFA784FAA05044E6179F2E0419D9CB4E69C1A33955F1DA2B466FFD1EA778F957060EEB4D4983525DFF4BFBE2719EE7A44C7F9D5C2EDC2B385963DAFDAD92B3C24DAFD9D27FBA97",
+            "AB": "0",
+            "AfterRegUrl": "https://www.mutualart.com/Artist/Franz-von-Bayros/A0F00FC72FF99AFE/Artworks",
+            "IdLocation": "64391250CC1B0CE3,20885A208DF41B60",
+            "RArtistsForIdleUser": "1756095488",
+            "RedirectUrl": cookie_url, # "/Artwork/Das-Zelt--Part-I-and-II--Amsler---Ruthar/88CFDC665E9FECF8",
+            "sc": "1",
+            "Session": "16417c32-a606-46e7-bab2-0bd8444ad5aa",
+            "t": "w",
+            "u": "707E37CBF0AF7219",
+            "UserGuid": "ed0718a0-a170-4632-90cd-1b90d0c0b646",
+            "vd": "c5822c772a4168900260e44e3410a43c"
+        }
+
+        # print(cookies)
+
         request = session.get(
             url, 
-            headers=Headers(headers=True).generate()
+            headers=Headers(headers=True).generate(),
+            cookies=cookies
         )
             
         if request.status_code != 200:
@@ -51,33 +67,40 @@ def get_soup(url):
         return soup
         
     except Exception as ex:
+        print("soup : ", ex)
         return False
 
     
 def get_img_of_a_post(url):
     s = get_soup(url)
-
+    # print(s)
     if not s:
         return False
         
     try:
         img = s.find('img', class_='object-fit-contain')['data-src']
+        print(img)
         return img
 
     except (Exception, TypeError, AttributeError) as ex:
+        print("get_img_of_a_post : ", ex)
         return False
 
 
 
-f = open(BASE_DIR + artist + "/1.txt", "r")
-for link in f.readlines():
-    post_url = link.strip()
-    title = link.split('/')[4] + str(random.randint(1, 1000))
-    img_url = get_img_of_a_post(post_url)
+with open(BASE_DIR + artist + "/1.txt", "r") as f:
+    cock = f.readlines()
+    for link in cock:
+        post_url = link.strip()
+        # print(post_url)
 
-    try:
-        download_file(img_url, post_url, title)
-    except Exception as e:
-        print(e)
-        time.sleep(3)
-        continue
+        title = link.split('/')[4] + str(random.randint(1, 1000))
+        img_url = get_img_of_a_post(post_url)
+        # print(img_url)
+
+        try:
+            download_file(img_url, post_url, title)
+        except Exception as e:
+            print("test", e)
+            time.sleep(3)
+            continue
