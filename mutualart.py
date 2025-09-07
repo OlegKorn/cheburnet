@@ -88,7 +88,13 @@ with open(f"{BASE_DIR}/{artist}/1.txt", "r") as f:
 
         title = link.split('/')[4].lower()
         img_url = get_img_of_a_post(post_url)
-        resp = requests.get(img_url, stream=True)
+
+        try:
+            resp = requests.get(img_url, stream=True)
+        except Exception:
+            print(f"No image at {post_url.replace('https://www.mutualart.com/', '')}...")
+            time.sleep(3)
+            continue
 
         if not file_exists(title):
             print(f"{post_url.replace('https://www.mutualart.com/', '')}.jpg didn't exist, downloaded")
@@ -100,4 +106,9 @@ with open(f"{BASE_DIR}/{artist}/1.txt", "r") as f:
                 print(f"{post_url.replace('https://www.mutualart.com/', '')}.jpg exists in {BASE_DIR}/{artist}, wont be overwritten")
             else:
                 print(f"{post_url.replace('https://www.mutualart.com/', '')}.jpg exists in {BASE_DIR}/{artist}, overwritten by {title}")
-                download_file(resp, img_url, title)
+                download_file(resp, img_url, title) 
+                    
+
+
+
+
