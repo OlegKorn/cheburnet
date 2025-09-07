@@ -1,3 +1,12 @@
+'''
+imgs = document.querySelector(".artwork-poc-container").querySelectorAll(".grid-item-container")
+
+for (i = 0; i < imgs.length; i++) {
+    link = "https://www.mutualart.com" + imgs[i].firstChild.dataset.link 
+    console.log(link)
+'''
+
+
 from bs4 import BeautifulSoup as bs
 import requests
 import re, os, sys
@@ -91,7 +100,7 @@ with open(f"{BASE_DIR}/{artist}/1.txt", "r") as f:
 
         try:
             resp = requests.get(img_url, stream=True)
-        except Exception:
+        except Exception as e:
             print(f"No image at {post_url.replace('https://www.mutualart.com/', '')}...")
             time.sleep(3)
             continue
