@@ -2,34 +2,26 @@ from bs4 import BeautifulSoup as bs
 import requests
 import re, os, sys
 from time import sleep
-import shutil
 from fake_headers import Headers
-import wget
-import random
 import time
+import os
+from pathlib import Path
+import random
 
 
-BASE_DIR = '/home/oleg/Изображения/mutualart/'
+BASE_DIR = '/home/oleg/Изображения/mutualart'
 MIN_SIZE = 300000
-artist = 'franz von bayros'
+artist = 'charles schwab'
 
 
-def download_file(url, post_url, filename):
-    resp = requests.get(url, stream=True)
-
-    if int(resp.headers.get("Content-Length")) < MIN_SIZE:
-        print("Not Downloaded: ", post_url)
-
-    if int(resp.headers.get("Content-Length")) > MIN_SIZE:
-        print("Downloaded: ", post_url)
-        content = resp.content
-        with open(f"{BASE_DIR}/{artist}/{filename}.jpg", 'wb') as f:
-            f.write(content)
+def download_file(resp, post_url, filename):
+    content = resp.content
+    with open(f"{BASE_DIR}/{artist}/{filename}.jpg", 'wb') as f:
+        f.write(content)
 
 
 def get_soup(url):
     session = requests.Session()
-        
     try:
         cookie_url = url.replace("https://www.mutualart.com", '')
 
@@ -43,7 +35,7 @@ def get_soup(url):
             "AfterRegUrl": "https://www.mutualart.com/Artist/Franz-von-Bayros/A0F00FC72FF99AFE/Artworks",
             "IdLocation": "64391250CC1B0CE3,20885A208DF41B60",
             "RArtistsForIdleUser": "1756095488",
-            "RedirectUrl": cookie_url, # "/Artwork/Das-Zelt--Part-I-and-II--Amsler---Ruthar/88CFDC665E9FECF8",
+            "RedirectUrl": "/Artwork/Das-Zelt--Part-I-and-II--Amsler---Ruthar/88CFDC665E9FECF8",
             "sc": "1",
             "Session": "16417c32-a606-46e7-bab2-0bd8444ad5aa",
             "t": "w",
@@ -52,14 +44,12 @@ def get_soup(url):
             "vd": "c5822c772a4168900260e44e3410a43c"
         }
 
-        # print(cookies)
-
         request = session.get(
             url, 
             headers=Headers(headers=True).generate(),
             cookies=cookies
         )
-            
+
         if request.status_code != 200:
             return False
             
@@ -70,8 +60,13 @@ def get_soup(url):
         print("soup : ", ex)
         return False
 
+
+def file_exists(filename):
+    return Path(filename + '.jpg').is_file()
+
     
 def get_img_of_a_post(url):
+    sleep(random.randint(1, 4))
     s = get_soup(url)
     # print(s)
     if not s:
@@ -79,7 +74,6 @@ def get_img_of_a_post(url):
         
     try:
         img = s.find('img', class_='object-fit-contain')['data-src']
-        print(img)
         return img
 
     except (Exception, TypeError, AttributeError) as ex:
@@ -87,20 +81,23 @@ def get_img_of_a_post(url):
         return False
 
 
-
-with open(BASE_DIR + artist + "/1.txt", "r") as f:
+with open(f"{BASE_DIR}/{artist}/1.txt", "r") as f:
     cock = f.readlines()
     for link in cock:
         post_url = link.strip()
-        # print(post_url)
 
-        title = link.split('/')[4] + str(random.randint(1, 1000))
+        title = link.split('/')[4].lower()
         img_url = get_img_of_a_post(post_url)
-        # print(img_url)
+        resp = requests.get(img_url, stream=True)
 
-        try:
-            download_file(img_url, post_url, title)
-        except Exception as e:
-            print("test", e)
-            time.sleep(3)
-            continue
+        if not file_exists(title):
+            print(f"{post_url.replace('https://www.mutualart.com/', '')}.jpg didn't exist, downloaded")
+            download_file(resp, img_url, title)
+
+        else:
+            size_of_existing_file = os.path.getsize(f"{BASE_DIR}/{artist}/{title}.jpg")
+            if int(resp.headers.get("Content-Length")) < size_of_existing_file:
+                print(f"{post_url.replace('https://www.mutualart.com/', '')}.jpg exists in {BASE_DIR}/{artist}, wont be overwritten")
+            else:
+                print(f"{post_url.replace('https://www.mutualart.com/', '')}.jpg exists in {BASE_DIR}/{artist}, overwritten by {title}")
+                download_file(resp, img_url, title)
